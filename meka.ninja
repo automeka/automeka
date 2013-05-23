@@ -24,7 +24,7 @@ cbrst = ${crst}[1m
 
 
 builddir = build/host
-cxx = clang++
+cxx = $$CXX
 ar  = ar
 cp  = cp -rf
 incdirs = -Iinclude
