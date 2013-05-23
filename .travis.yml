@@ -1,7 +1,8 @@
 language: cpp
 script:
-  - ninja -f bootstrap.ninja
-  - ninja
+  - cd bin/ninja && ./bootstrap.py && ./configure.py && cd -
+  - ./bin/ninja/ninja -f bootstrap.ninja
+  - ./bin/ninja/ninja
 compiler:
   - clang
 before_install:
@@ -9,4 +10,4 @@ before_install:
   - sudo add-apt-repository -y "deb http://llvm.org/apt/quantal/ llvm-toolchain-quantal main"
   - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
   - sudo apt-get -qq update
-  - sudo apt-get -qq install g++-4.7 libboost1.50-all-dev ninja-build clang-3.4 lldb-3.4
+  - sudo apt-get -qq install g++-4.7 libboost1.50-all-dev clang-3.4

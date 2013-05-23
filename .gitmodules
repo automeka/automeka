@@ -1,3 +1,6 @@
 [submodule "lib/libcorefungi"]
 	path = lib/libcorefungi
 	url = http://github.com/berenm/libcorefungi.git
+[submodule "bin/ninja"]
+	path = bin/ninja
+	url = git://github.com/martine/ninja.git
