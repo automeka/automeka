@@ -64,7 +64,7 @@ rule copy
   description = ${cylw}CP${crst}  ${ccyn}$out${crst}
 
 rule configure
-  command = $builddir/bin/meka$exeext
+  command = $builddir/bin/meka$exeext && ninja -f build/build.ninja $builddir/bin/meka && cp build/build.ninja ./
   description = ${cylw}GEN${crst} ${ccyn}build.ninja${crst}
   generator = 1
 build build.ninja: configure | $builddir/bin/meka$exeext
