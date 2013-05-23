@@ -1,8 +1,31 @@
 #include <meka.hpp>
 
-#include "lib/libcorefungi/meka"
-
 namespace meka {
+
+  meka::package yamlcpp = {
+    path    = meka::this_dir() / "lib/libcorefungi/lib/yaml-cpp",
+    name    = "yaml-cpp",
+    version = "1.5.0",
+
+    meka::lib {
+      name    = "yaml-cpp",
+      sources = { "src/.*\\.cpp" }
+    },
+  };
+
+  meka::package corefungi = {
+    path    = meka::this_dir() / "lib/libcorefungi",
+    name    = "libcorefungi",
+    version = "0.0.1",
+
+    modules = { meka::yamlcpp },
+
+    meka::lib {
+      name    = "corefungi",
+      sources = { "src/.*\\.cpp" },
+      links   = { "yaml-cpp" }
+    },
+  };
 
   meka::package self = {
     path    = meka::this_dir(),
