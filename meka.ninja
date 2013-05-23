@@ -47,11 +47,11 @@ rule ar
   description = ${cylw}AR${crst}  ${cblu}$out${crst}
 
 rule lib
-  command = $cxx -shared $cflags -o $out $in $libs
+  command = $cxx -shared $cflags -o $out $in $ldflags $libs
   description = ${cylw}LIB${crst} ${cblu}$out${crst}
 
 rule exe
-  command = $cxx $ldflags -o $out $in $libs
+  command = $cxx -o $out $in $ldflags $libs
   description = ${cylw}EXE${crst} ${cblu}$out${crst}
 
 rule copy
