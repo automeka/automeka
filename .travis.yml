@@ -4,7 +4,6 @@ script:
   - export CXX="clang++ -isystem /usr/include/x86_64-linux-gnu/c++/4.8/ -isystem /usr/include/x86_64-linux-gnu"
   - cd bin/ninja && ./bootstrap.py && ./configure.py && cd -
   - ./bin/ninja/ninja -f bootstrap.ninja
-  - cat build.ninja
   - ./bin/ninja/ninja
 compiler:
   - clang
