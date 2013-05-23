@@ -26,6 +26,7 @@ cbrst = ${crst}[1m
 builddir = build/host
 cxx = clang++
 ar  = ar
+cp  = cp -rf
 incdirs = -Iinclude
 cflags  = -std=c++11 -fpic -Qunused-arguments
 ldflags = -L$builddir/lib -Wl,-rpath,$builddir/lib
@@ -52,6 +53,10 @@ rule lib
 rule exe
   command = $cxx $ldflags -o $out $in $libs
   description = ${cylw}EXE${crst} ${cblu}$out${crst}
+
+rule copy
+  command = $cp $in $out
+  description = ${cylw}CP${crst}  ${ccyn}$out${crst}
 
 rule configure
   command = $builddir/bin/meka$exeext

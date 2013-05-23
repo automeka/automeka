@@ -50,6 +50,7 @@ namespace meka {
     auto const& objout = [](std::string const& name) { return "${builddir}/obj/" + name + "${objext}"; };
     auto const& libout = [](std::string const& name) { return "${builddir}/lib/${libprefix}" + name + "${libext}"; };
     auto const& exeout = [](std::string const& name) { return "${builddir}/bin/" + name + "${exeext}"; };
+    auto const& incout = [](std::string const& name) { return "${builddir}/" + name; };
 
     auto const& addbin = [&](std::string const& binname, std::string const& type) {
                            std::string const& binout = type == "lib" ? libout(binname) : exeout(binname);
@@ -65,6 +66,9 @@ namespace meka {
                                   rules[binname] += " -l" + link;
                                 }
                               };
+    auto const& addincl = [&](std::string const& target, std::string const& source) {
+                           rules.emplace(target, "build " + target + ": copy " + source);
+                         };
 
     std::vector< std::string > idirs = {"-I" + (package.path / "src").string(), "-I" + (package.path / "include").string()};
     std::transform(std::begin(package.modules), std::end(package.modules), std::back_inserter(idirs), [](meka::package const& module) { return "-I" + (module.path / "include").string(); });
@@ -75,9 +79,28 @@ namespace meka {
     }
 
     for (bfs::recursive_directory_iterator fit { package.path }, end; fit != end; ++fit) {
+      switch(fit.status().type()) {
+        default:
+        case bfs::status_error:
+        case bfs::file_not_found:
+        case bfs::directory_file:
+        case bfs::type_unknown:
+          continue;
+        case bfs::regular_file:
+        case bfs::symlink_file:
+        case bfs::block_file:
+        case bfs::character_file:
+        case bfs::fifo_file:
+        case bfs::socket_file:
+          break;
+      }
+
       bfs::path const   path  = *fit;
       std::string const spath = make_relative(package.path, path).string();
       std::string const opath = make_relative(bfs::current_path(), path.parent_path() / path.stem()).string();
+
+      if (boost::regex_match(std::begin(spath), std::end(spath), boost::regex { "include/.*" }))
+        addincl(incout(spath), (package.path / spath).string());
 
       for (auto const& bin : package.bins) {
         addbin(bin.name, "exe");
