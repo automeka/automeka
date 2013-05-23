@@ -23,6 +23,14 @@ namespace meka {
     return bfs::canonical(bfs::path(file)).parent_path();
   }
 
+  static meka::bin const meka {
+    name    = "meka",
+    sources = { "meka" },
+    links   = { "meka", "boost_filesystem", "boost_system", "boost_regex" }
+
+    // meka::host
+  };
+
 }
 
 #define this_dir() parent_path(__FILE__)

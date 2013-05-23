@@ -26,7 +26,8 @@ cbrst = ${crst}[1m
 builddir = build/host
 cxx = $$CXX
 ar  = ar
-cp  = cp -rf
+cp  = cp -fr
+ln  = ln -fs
 incdirs = -Iinclude
 cflags  = -std=c++11 -fpic -Qunused-arguments
 ldflags = -L$builddir/lib -Wl,-rpath,$builddir/lib
@@ -53,6 +54,10 @@ rule lib
 rule exe
   command = $cxx -o $out $in $ldflags $libs
   description = ${cylw}EXE${crst} ${cblu}$out${crst}
+
+rule ln
+  command = $ln $$(basename $in) $out
+  description = ${cylw}LN${crst}  ${ccyn}$out${crst}
 
 rule copy
   command = $cp $in $out

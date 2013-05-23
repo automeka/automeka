@@ -1,5 +1,7 @@
 include meka.ninja
 
+cflags = $cflags -DMEKA_BOOTSTRAP_MEKA
+
 build $builddir/src/meka/action/indent$objext: cxx src/meka/action/indent.cpp
 build $builddir/src/meka/action/test$objext: cxx src/meka/action/test.cpp
 build $builddir/src/meka/action/install$objext: cxx src/meka/action/install.cpp

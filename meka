@@ -23,7 +23,7 @@ namespace meka {
     meka::lib {
       name    = "corefungi",
       sources = { "src/.*\\.cpp" },
-      links   = { "yaml-cpp" }
+      links   = { "yaml-cpp", "boost_program_options" }
     },
   };
 
@@ -36,18 +36,13 @@ namespace meka {
 
     meka::lib {
       name    = "meka",
-      sources = { "src/.*\\.cpp" }
+      sources = { "src/.*\\.cpp" },
+      links   = { "corefungi" }
 
       // meka::host
     },
 
-    meka::bin {
-      name    = "meka",
-      sources = { "meka" },
-      links   = { "meka", "boost_filesystem", "boost_system", "boost_regex" }
-
-      // meka::host
-    }
+    meka::meka,
   };
 
   void main() {
