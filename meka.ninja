@@ -1,0 +1,60 @@
+cblk = [30m
+cred = [31m
+cgrn = [32m
+cylw = [33m
+cblu = [34m
+cprp = [35m
+ccyn = [36m
+cwht = [37m
+crgb = [38m
+cdef = [39m
+crst = [0m
+
+cbblk = ${cblk}[1m
+cbred = ${cred}[1m
+cbgrn = ${cgrn}[1m
+cbylw = ${cylw}[1m
+cbblu = ${cblu}[1m
+cbprp = ${cprp}[1m
+cbcyn = ${ccyn}[1m
+cbwht = ${cwht}[1m
+cbrgb = ${crgb}[1m
+cbdef = ${cdef}[1m
+cbrst = ${crst}[1m
+
+
+builddir = build/host
+cxx = clang++
+ar  = ar
+incdirs = -Iinclude
+cflags  = -std=c++11 -fpic -Qunused-arguments
+ldflags = -L$builddir/lib -Wl,-rpath,$builddir/lib
+
+libprefix = lib
+exeext    =
+libext    = .so
+objext    = .o
+
+rule cxx
+  command = $cxx -MMD -MT $out -MF $out.d $cflags $incdirs -xc++ -c $in -o $out
+  description = ${cylw}CXX${crst} ${cgrn}$out${crst}
+  depfile = $out.d
+  deps = gcc
+
+rule ar
+  command = rm -f $out && $ar crs $out $in
+  description = ${cylw}AR${crst}  ${cblu}$out${crst}
+
+rule lib
+  command = $cxx -shared $cflags -o $out $in $libs
+  description = ${cylw}LIB${crst} ${cblu}$out${crst}
+
+rule exe
+  command = $cxx $ldflags -o $out $in $libs
+  description = ${cylw}EXE${crst} ${cblu}$out${crst}
+
+rule configure
+  command = $builddir/bin/meka$exeext
+  description = ${cylw}GEN${crst} ${ccyn}build.ninja${crst}
+  generator = 1
+build build.ninja: configure | $builddir/bin/meka$exeext

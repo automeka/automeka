@@ -55,6 +55,11 @@ namespace meka {
   };
   static field_setter< std::vector< std::string >, links_field > const links;
 
+  template< typename S > struct modules_field {
+    static constexpr std::vector< meka::module_type > S::* pointer = &S::modules;
+  };
+  static field_setter< std::vector< meka::module_type >, modules_field > const modules;
+
 }
 
 #endif // ifndef __MEKA_MANIP_SETTER_HPP__

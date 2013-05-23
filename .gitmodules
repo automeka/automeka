@@ -1,0 +1,3 @@
+[submodule "lib/libcorefungi"]
+	path = lib/libcorefungi
+	url = http://github.com/berenm/libcorefungi.git

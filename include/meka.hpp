@@ -20,7 +20,7 @@ namespace meka {
   namespace bfs = boost::filesystem;
 
   bfs::path parent_path(std::string const& file) {
-    return bfs::path(file).parent_path();
+    return bfs::canonical(bfs::path(file)).parent_path();
   }
 
 }

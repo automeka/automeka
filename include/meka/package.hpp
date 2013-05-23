@@ -16,8 +16,19 @@
 namespace meka {
   namespace bfs = boost::filesystem;
 
-  struct bin_type {
+  struct package;
 
+  struct module_type {
+    module_type(meka::package const& package) :
+      package{&package}
+    {}
+
+    operator meka::package const&() const { return *this->package; }
+
+    meka::package const* package;
+  };
+
+  struct bin_type {
     typedef std::function< void (meka::bin_type&) > manipulator;
     typedef std::vector< manipulator >              manipulators;
 
@@ -28,14 +39,12 @@ namespace meka {
       }
     }
 
-    std::string                        name;
-    std::vector< std::string >         sources;
-    std::vector< std::string > mutable objects;
-    std::vector< std::string >         links;
+    std::string                name;
+    std::vector< std::string > sources;
+    std::vector< std::string > links;
   };
 
   struct lib_type {
-
     typedef std::function< void (meka::lib_type&) > manipulator;
     typedef std::vector< manipulator >              manipulators;
 
@@ -46,13 +55,12 @@ namespace meka {
       }
     }
 
-    std::string                        name;
-    std::vector< std::string >         sources;
-    std::vector< std::string > mutable objects;
+    std::string                name;
+    std::vector< std::string > sources;
+    std::vector< std::string > links;
   };
 
   struct package {
-
     typedef std::function< void (meka::package&) > manipulator;
     typedef std::vector< manipulator >             manipulators;
 
@@ -66,6 +74,8 @@ namespace meka {
     bfs::path   path;
     std::string name;
     std::string version;
+
+    std::vector< meka::module_type > modules;
 
     std::vector< meka::bin_type > bins;
     std::vector< meka::lib_type > libs;

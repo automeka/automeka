@@ -11,6 +11,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
+#include <boost/algorithm/string/join.hpp>
 
 #include <unordered_map>
 #include <fstream>
@@ -43,131 +44,104 @@ namespace meka {
     return rel;
   }
 
-  void build(meka::package const& package) {
-    std::clog << "Computing dependencies..." << std::endl;
+  static void genrules(meka::package const& package, std::unordered_map< std::string, std::string >& rules) {
+    std::clog << "Found package: " << package.name << ", version: " << package.version << " path: " << package.path << "..." << std::endl;
 
-    std::unordered_map< std::string, std::string > rules;
+    auto const& objout = [](std::string const& name) { return "${builddir}/obj/" + name + "${objext}"; };
+    auto const& libout = [](std::string const& name) { return "${builddir}/lib/${libprefix}" + name + "${libext}"; };
+    auto const& exeout = [](std::string const& name) { return "${builddir}/bin/" + name + "${exeext}"; };
 
-    auto const& addlib = [&](std::string const& libname) {
-                           rules.emplace(libname, "build $builddir/" + libname + "$libext: lib");
+    auto const& addbin = [&](std::string const& binname, std::string const& type) {
+                           std::string const& binout = type == "lib" ? libout(binname) : exeout(binname);
+                           rules.emplace(binout, "build " + binout + ": " + type);
                          };
-    auto const& addbin = [&](std::string const& binname) {
-                           rules.emplace(binname, "build $builddir/" + binname + "$exeext: exe");
+    auto const& addobj = [&](std::string const& binname, std::string const& objname, std::string const& source, std::string const& incdirs) {
+                           rules.emplace(objname, "build " + objname + ": cxx " + source + "\n  incdirs = " + incdirs);
+                           rules[binname] += " " + objname;
                          };
-    auto const& addobj = [&](std::string const& binname, std::string const& objname, std::string const& source) {
-                           std::string const& target = " $builddir/" + objname + "$objext";
-                           rules.emplace(objname, "build" + target + ": cxx " + source);
-                           rules[binname] += target;
-                         };
-    auto const& addbinlinks = [&](std::string const& binname, std::vector< std::string > const& links) {
+    auto const& addlinks = [&](std::string const& binname, std::vector< std::string > const& links) {
                                 rules[binname] += "\n  libs =";
                                 for (auto const& link : links) {
                                   rules[binname] += " -l" + link;
                                 }
                               };
 
-    for (bfs::recursive_directory_iterator fit { bfs::current_path() }, end; fit != end; ++fit) {
-      bfs::path const&  path  = make_relative(bfs::current_path(), static_cast< bfs::path >(*fit));
-      std::string const spath = path.string();
-      std::string const stem  = (path.parent_path() / path.stem()).string();
+    std::vector< std::string > idirs = {"-I" + (package.path / "src").string(), "-I" + (package.path / "include").string()};
+    std::transform(std::begin(package.modules), std::end(package.modules), std::back_inserter(idirs), [](meka::package const& module) { return "-I" + (module.path / "include").string(); });
+    std::string const& incdirs = boost::algorithm::join(idirs, " ");
+
+    for(meka::package const& module : package.modules) {
+      meka::genrules(module, rules);
+    }
+
+    for (bfs::recursive_directory_iterator fit { package.path }, end; fit != end; ++fit) {
+      bfs::path const   path  = *fit;
+      std::string const spath = make_relative(package.path, path).string();
+      std::string const opath = make_relative(bfs::current_path(), path.parent_path() / path.stem()).string();
 
       for (auto const& bin : package.bins) {
-        addbin("bin/" + bin.name);
+        addbin(bin.name, "exe");
 
         for (auto const& src : bin.sources) {
           if (boost::regex_match(std::begin(spath), std::end(spath), boost::regex { src }))
-            addobj("bin/" + bin.name, stem, spath);
+            addobj(exeout(bin.name), objout(opath), (package.path / spath).string(), incdirs);
         }
       }
-
       for (auto const& lib : package.libs) {
-        addlib("lib/${libprefix}" + lib.name);
+        addbin(lib.name, "lib");
 
         for (auto const& src : lib.sources) {
           if (boost::regex_match(std::begin(spath), std::end(spath), boost::regex { src }))
-            addobj("lib/${libprefix}" + lib.name, stem, spath);
+            addobj(libout(lib.name), objout(opath), (package.path / spath).string(), incdirs);
         }
       }
     }
 
     for (auto const& bin : package.bins) {
-      rules["bin/" + bin.name] += " |";
-      for (auto const& lib : package.libs) {
-        rules["bin/" + bin.name] += " $builddir/lib/${libprefix}" + lib.name + "$libext";
+      std::vector< std::string > deps = {};
+      for (auto const& link : bin.links) {
+        if (rules.find(libout(link)) != rules.end())
+          deps.push_back(libout(link));
       }
+
+      if (deps.size() > 0)
+        rules[exeout(bin.name)] += " | " + boost::algorithm::join(deps, " ");
+    }
+    for (auto const& lib : package.libs) {
+      std::vector< std::string > deps = {};
+      for (auto const& link : lib.links) {
+        if (rules.find(libout(link)) != rules.end())
+          deps.push_back(libout(link));
+      }
+
+      if (deps.size() > 0)
+        rules[libout(lib.name)] += " | " + boost::algorithm::join(deps, " ");
     }
 
     for (auto const& bin : package.bins) {
-      addbinlinks("bin/" + bin.name, bin.links);
+      addlinks(exeout(bin.name), bin.links);
     }
+    for (auto const& lib : package.libs) {
+      addlinks(libout(lib.name), lib.links);
+    }
+  }
 
-    std::ofstream ninja { "build.ninja" };
-    ninja << "cblk = [30m\n";
-    ninja << "cred = [31m\n";
-    ninja << "cgrn = [32m\n";
-    ninja << "cylw = [33m\n";
-    ninja << "cblu = [34m\n";
-    ninja << "cprp = [35m\n";
-    ninja << "ccyn = [36m\n";
-    ninja << "cwht = [37m\n";
-    ninja << "crgb = [38m\n";
-    ninja << "cdef = [39m\n";
-    ninja << "crst = [0m\n";
-    ninja << "\n";
-    ninja << "cbblk = ${cblk}[1m\n";
-    ninja << "cbred = ${cred}[1m\n";
-    ninja << "cbgrn = ${cgrn}[1m\n";
-    ninja << "cbylw = ${cylw}[1m\n";
-    ninja << "cbblu = ${cblu}[1m\n";
-    ninja << "cbprp = ${cprp}[1m\n";
-    ninja << "cbcyn = ${ccyn}[1m\n";
-    ninja << "cbwht = ${cwht}[1m\n";
-    ninja << "cbrgb = ${crgb}[1m\n";
-    ninja << "cbdef = ${cdef}[1m\n";
-    ninja << "cbrst = ${crst}[1m\n";
-    ninja << "\n";
-    ninja << "\n";
-    ninja << "builddir = build/host/\n";
-    ninja << "cxx = clang++\n";
-    ninja << "ar  = ar\n";
-    ninja << "cflags  = -std=c++11 -fpic -Iinclude -Qunused-arguments\n";
-    ninja << "ldflags = -L$builddir/lib -Wl,-rpath,$builddir/lib\n";
-    ninja << "\n";
-    ninja << "libprefix = lib\n";
-    ninja << "exeext    =\n";
-    ninja << "libext    = .so\n";
-    ninja << "objext    = .o\n";
-    ninja << "\n";
-    ninja << "rule cxx\n";
-    ninja << "  command = $cxx -MMD -MT $out -MF $out.d $cflags -xc++ -c $in -o $out\n";
-    ninja << "  description = ${cylw}CXX${crst} ${cgrn}$out${crst}\n";
-    ninja << "  depfile = $out.d\n";
-    ninja << "  deps = gcc\n";
-    ninja << "\n";
-    ninja << "rule ar\n";
-    ninja << "  command = rm -f $out && $ar crs $out $in\n";
-    ninja << "  description = ${cylw}AR${crst}  ${cblu}$out${crst}\n";
-    ninja << "\n";
-    ninja << "rule lib\n";
-    ninja << "  command = $cxx -shared $cflags -o $out $in\n";
-    ninja << "  description = ${cylw}LIB${crst} ${cblu}$out${crst}\n";
-    ninja << "\n";
-    ninja << "rule exe\n";
-    ninja << "  command = $cxx $ldflags -o $out $in $libs\n";
-    ninja << "  description = ${cylw}EXE${crst} ${cblu}$out${crst}\n";
-    ninja << "\n";
-    ninja << "# rule configure\n";
-    ninja << "#   command = ${configure_env}python configure.py $configure_args\n";
-    ninja << "#   generator = 1\n";
-    ninja << "# build build.ninja: configure | configure.py misc/ninja_syntax.py\n";
+  void build(meka::package const& package) {
+    std::clog << "Computing dependencies..." << std::endl;
+
+    std::unordered_map< std::string, std::string > rules;
+    meka::genrules(package, rules);
+
+    std::ofstream ninja { (package.path / "build.ninja").string() };
+    ninja << "include meka.ninja\n";
     ninja << std::endl;
 
     for (auto const& pair : rules) {
       ninja << pair.second << std::endl;
     }
 
-    std::clog << "Building package: " << package.name << ", version: " << package.version << " from: " << package.path << "..." << std::endl;
-    std::system("ninja");
+    // std::clog << "Building package: " << package.name << ", version: " << package.version << " from: " << package.path << "..." << std::endl;
+//    std::system("ninja -d explain -v");
   } // build
 
 }

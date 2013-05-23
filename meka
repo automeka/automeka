@@ -1,11 +1,15 @@
 #include <meka.hpp>
 
+#include "lib/libcorefungi/meka"
+
 namespace meka {
 
   meka::package self = {
     path    = meka::this_dir(),
     name    = "meka",
     version = "0.0.1",
+
+    modules = { meka::corefungi },
 
     meka::lib {
       name    = "meka",
