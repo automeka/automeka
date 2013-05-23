@@ -1,0 +1,68 @@
+cblk = [30m
+cred = [31m
+cgrn = [32m
+cylw = [33m
+cblu = [34m
+cprp = [35m
+ccyn = [36m
+cwht = [37m
+crgb = [38m
+cdef = [39m
+crst = [0m
+
+cbblk = ${cblk}[1m
+cbred = ${cred}[1m
+cbgrn = ${cgrn}[1m
+cbylw = ${cylw}[1m
+cbblu = ${cblu}[1m
+cbprp = ${cprp}[1m
+cbcyn = ${ccyn}[1m
+cbwht = ${cwht}[1m
+cbrgb = ${crgb}[1m
+cbdef = ${cdef}[1m
+cbrst = ${crst}[1m
+
+
+builddir = build/host/
+cxx = clang++
+ar  = ar
+cflags  = -std=c++11 -fpic -Iinclude -Qunused-arguments
+ldflags = -L$builddir/lib -Wl,-rpath,$builddir/lib
+
+libprefix = lib
+exeext    =
+libext    = .so
+objext    = .o
+
+rule cxx
+  command = $cxx -MMD -MT $out -MF $out.d $cflags -xc++ -c $in -o $out
+  description = ${cylw}CXX${crst} ${cgrn}$out${crst}
+  depfile = $out.d
+  deps = gcc
+
+rule ar
+  command = rm -f $out && $ar crs $out $in
+  description = ${cylw}AR${crst}  ${cblu}$out${crst}
+
+rule lib
+  command = $cxx -shared $cflags -o $out $in
+  description = ${cylw}LIB${crst} ${cblu}$out${crst}
+
+rule exe
+  command = $cxx $ldflags -o $out $in $libs
+  description = ${cylw}EXE${crst} ${cblu}$out${crst}
+
+# rule configure
+#   command = ${configure_env}python configure.py $configure_args
+#   generator = 1
+# build build.ninja: configure | configure.py misc/ninja_syntax.py
+
+build $builddir/src/meka/action/pack$objext: cxx src/meka/action/pack.cpp
+build $builddir/src/meka/action/build$objext: cxx src/meka/action/build.cpp
+build $builddir/src/meka/action/install$objext: cxx src/meka/action/install.cpp
+build $builddir/src/meka/action/indent$objext: cxx src/meka/action/indent.cpp
+build $builddir/src/meka/action/test$objext: cxx src/meka/action/test.cpp
+build $builddir/meka$objext: cxx meka
+build $builddir/lib/${libprefix}meka$libext: lib $builddir/src/meka/action/test$objext $builddir/src/meka/action/indent$objext $builddir/src/meka/action/install$objext $builddir/src/meka/action/pack$objext $builddir/src/meka/action/build$objext
+build $builddir/bin/meka$exeext: exe $builddir/meka$objext | $builddir/lib/${libprefix}meka$libext
+  libs = -lmeka -lboost_filesystem -lboost_system -lboost_regex

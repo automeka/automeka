@@ -1,0 +1,37 @@
+#include <meka.hpp>
+
+namespace meka {
+
+  meka::package self = {
+    path    = meka::this_dir(),
+    name    = "meka",
+    version = "0.0.1",
+
+    meka::lib {
+      name    = "meka",
+      sources = { "src/.*\\.cpp" }
+
+      // meka::host
+    },
+
+    meka::bin {
+      name    = "meka",
+      sources = { "meka" },
+      links   = { "meka", "boost_filesystem", "boost_system", "boost_regex" }
+
+      // meka::host
+    }
+  };
+
+  void main() {
+    // meka::indent(meka::self);
+    meka::build(meka::self);
+
+    // meka::test(meka::self);
+    // meka::install(meka::self);
+    // meka::pack(meka::self);
+  }
+
+}
+
+#include <meka/main>
