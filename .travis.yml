@@ -2,9 +2,10 @@ language: cpp
 script:
   - git submodule update --init --recursive
   - export CXX="clang++ -isystem /usr/include/x86_64-linux-gnu/c++/4.8/ -isystem /usr/include/x86_64-linux-gnu"
+  - export NINJA="./bin/ninja/ninja"
   - cd bin/ninja && ./bootstrap.py && ./configure.py && cd -
-  - ./bin/ninja/ninja -f bootstrap.ninja
-  - ./bin/ninja/ninja
+  - $NINJA -f bootstrap.ninja
+  - $NINJA
 compiler:
   - clang
 before_install:

@@ -24,10 +24,11 @@ cbrst = ${crst}[1m
 
 
 builddir = build/host
-cxx = $$CXX
-ar  = ar
-cp  = cp -fr
-ln  = ln -fs
+ninja = $${NINJA:-ninja}
+cxx   = $${CXX:-clang++}
+ar    = ar
+cp    = cp -fr
+ln    = ln -fs
 incdirs = -Iinclude
 cflags  = -std=c++11 -fpic -Qunused-arguments
 ldflags = -L$builddir/lib -Wl,-rpath,$builddir/lib
@@ -64,7 +65,7 @@ rule copy
   description = ${cylw}CP${crst}  ${ccyn}$out${crst}
 
 rule configure
-  command = $builddir/bin/meka$exeext && ninja -f build/build.ninja $builddir/bin/meka && cp build/build.ninja ./
+  command = $builddir/bin/meka$exeext && $ninja -f build/build.ninja $builddir/bin/meka && cp build/build.ninja ./
   description = ${cylw}GEN${crst} ${ccyn}build.ninja${crst}
   generator = 1
 build build.ninja: configure | $builddir/bin/meka$exeext
