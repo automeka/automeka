@@ -58,6 +58,7 @@ namespace meka {
     std::string                name;
     std::vector< std::string > sources;
     std::vector< std::string > links;
+    std::string                linkage = "shared";
   };
 
   struct package {

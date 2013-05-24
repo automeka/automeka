@@ -1,5 +1,24 @@
 #include <meka.hpp>
 
+#ifdef MEKA_BOOTSTRAP_MEKA
+
+namespace meka {
+  extern meka::package self;
+}
+
+extern "C" int main(int argc, char const* argv[]) {
+  meka::configure(meka::self);
+  meka::build(meka::self);
+
+  return 0;
+}
+
+#else /* ifdef MEKA_BOOTSTRAP_MEKA */
+
+# include <meka/main>
+
+#endif /* ifdef MEKA_BOOTSTRAP_MEKA */
+
 namespace meka {
 
   meka::package yamlcpp = {
@@ -18,12 +37,12 @@ namespace meka {
     name    = "libcorefungi",
     version = "0.0.1",
 
-    modules = { meka::yamlcpp },
+    modules   = { meka::yamlcpp },
 
     meka::lib {
       name    = "corefungi",
       sources = { "src/.*\\.cpp" },
-      links   = { "yaml-cpp", "boost_program_options" }
+      links   = { "yaml-cpp", "boost_program_options"}
     },
   };
 
@@ -32,12 +51,20 @@ namespace meka {
     name    = "meka",
     version = "0.0.1",
 
-    modules = { meka::corefungi },
+    modules   = { meka::corefungi },
 
     meka::lib {
       name    = "meka",
-      sources = { "src/.*\\.cpp" },
+      sources = { "src/meka/.*\\.cpp" },
       links   = { "corefungi" }
+
+      // meka::host
+    },
+
+    meka::bin  {
+      name    = "meka",
+      sources = { "src/meka.cpp" },
+      links   = { "meka", "boost_filesystem","boost_system", "boost_regex" }
 
       // meka::host
     },
@@ -45,15 +72,4 @@ namespace meka {
     meka::meka,
   };
 
-  void main() {
-    // meka::indent(meka::self);
-    meka::build(meka::self);
-
-    // meka::test(meka::self);
-    // meka::install(meka::self);
-    // meka::pack(meka::self);
-  }
-
 }
-
-#include <meka/main>

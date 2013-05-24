@@ -5,12 +5,23 @@
  * See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt
  */
 
+#ifndef __MEKA_MAIN__
+#define __MEKA_MAIN__
+
 namespace meka {
 
+  void main(std::string const& program, std::vector< std::string > const& arguments);
+
   extern "C" int main(int argc, char const* argv[]) {
-    meka::main();
+    std::string const program = argv[0];
+
+    std::vector< std::string > const arguments(argv + 1, argv + argc);
+
+    meka::main(program, arguments);
 
     return 0;
   }
 
 }
+
+#endif // ifndef __MEKA_MAIN__

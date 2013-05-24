@@ -1,3 +1,6 @@
+ninja_required_version = 1.3
+builddir = build
+
 cblk = [30m
 cred = [31m
 cgrn = [32m
@@ -22,8 +25,6 @@ cbrgb = ${crgb}[1m
 cbdef = ${cdef}[1m
 cbrst = ${crst}[1m
 
-
-builddir = build/host
 ninja = $${NINJA:-ninja}
 cxx   = $${CXX:-clang++}
 ar    = ar
@@ -31,12 +32,14 @@ cp    = cp -fr
 ln    = ln -fs
 incdirs = -Iinclude
 cflags  = -std=c++11 -fpic -Qunused-arguments
-ldflags = -L$builddir/lib -Wl,-rpath,$builddir/lib
+ldflags = -L/usr/local/lib -L$builddir/lib -Wl,-rpath,$builddir/lib
 
-libprefix = lib
-exeext    =
-libext    = .so
-objext    = .o
+libpfx = lib
+arcpfx = lib
+exeext =
+libext = .so
+arcext = .a
+objext = .o
 
 rule cxx
   command = $cxx -MMD -MT $out -MF $out.d $cflags $incdirs -xc++ -c $in -o $out
@@ -44,7 +47,7 @@ rule cxx
   depfile = $out.d
   deps = gcc
 
-rule ar
+rule arc
   command = rm -f $out && $ar crs $out $in
   description = ${cylw}AR${crst}  ${cblu}$out${crst}
 
@@ -65,7 +68,8 @@ rule copy
   description = ${cylw}CP${crst}  ${ccyn}$out${crst}
 
 rule configure
-  command = $builddir/bin/meka$exeext && $ninja -f build/build.ninja $builddir/bin/meka && cp build/build.ninja ./
+  command = $builddir/meka$exeext configure
   description = ${cylw}GEN${crst} ${ccyn}build.ninja${crst}
   generator = 1
-build build.ninja: configure | $builddir/bin/meka$exeext
+
+build $builddir/build.ninja: configure | $builddir/meka$exeext

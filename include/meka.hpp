@@ -8,23 +8,20 @@
 #ifndef __MEKA_HPP__
 #define __MEKA_HPP__
 
-#include <boost/filesystem.hpp>
-
 #include <meka/package.hpp>
+#include <meka/path.hpp>
 
+#include <meka/action/configure.hpp>
 #include <meka/action/build.hpp>
+
 #include <meka/manip/setter.hpp>
 #include <meka/manip/appender.hpp>
 
 namespace meka {
   namespace bfs = boost::filesystem;
 
-  bfs::path parent_path(std::string const& file) {
-    return bfs::canonical(bfs::path(file)).parent_path();
-  }
-
   static meka::bin const meka {
-    name    = "meka",
+    name    = "../meka",
     sources = { "meka" },
     links   = { "meka", "boost_filesystem", "boost_system", "boost_regex" }
 
@@ -32,7 +29,5 @@ namespace meka {
   };
 
 }
-
-#define this_dir() parent_path(__FILE__)
 
 #endif // ifndef __MEKA_HPP__
