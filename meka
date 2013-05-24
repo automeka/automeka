@@ -2,20 +2,16 @@
 
 #ifdef MEKA_BOOTSTRAP_MEKA
 
-namespace meka {
-  extern meka::package self;
-}
-
 extern "C" int main(int argc, char const* argv[]) {
-  meka::configure(meka::self);
-  meka::build(meka::self);
+  meka::configure(meka::package::root);
+  meka::build(meka::package::root);
 
   return 0;
 }
 
-#else /* ifdef MEKA_BOOTSTRAP_MEKA */
-
-# include <meka/main>
+namespace meka {
+  meka::module_type meka::package::root;
+}
 
 #endif /* ifdef MEKA_BOOTSTRAP_MEKA */
 

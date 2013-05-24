@@ -12,40 +12,50 @@
 namespace meka {
   namespace cfg = ::corefungi;
 
-  extern meka::package self;
+  meka::module_type package::root;
 
   void main(std::string const& program, std::vector< std::string > const& arguments) {
     cfg::init(program, arguments.empty() ? std::vector< std::string > { "build" } : arguments);
 
     std::string const command = cfg::get("program.arguments.#0");
 
-    // meka::indent(meka::self);
+    // meka::indent(package::root);
     if (command == "indent")
       return;
 
-    meka::configure(meka::self);
+    meka::configure(package::root);
 
     if (command == "configure")
       return;
 
-    meka::build(meka::self);
+    meka::build(package::root);
 
     if (command == "build")
       return;
 
-    // meka::test(meka::self);
+    // meka::test(package::root);
 
     if (command == "test")
       return;
 
-    // meka::install(meka::self);
+    // meka::install(package::root);
 
     if (command == "install")
       return;
 
-    // meka::pack(meka::self);
+    // meka::pack(package::root);
     if (command == "package")
       return;
   }
 
+}
+
+extern "C" int main(int argc, char const* argv[]) {
+  std::string const program = argv[0];
+
+  std::vector< std::string > const arguments(argv + 1, argv + argc);
+
+  meka::main(program, arguments);
+
+  return 0;
 }

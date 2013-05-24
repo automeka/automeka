@@ -9,6 +9,7 @@
 #define __MEKA_PACKAGE_HPP__
 
 #include <vector>
+#include <unordered_map>
 #include <functional>
 
 #include <boost/filesystem/path.hpp>
@@ -19,13 +20,14 @@ namespace meka {
   struct package;
 
   struct module_type {
+    module_type() = default;
     module_type(meka::package const& package) :
       package{&package}
     {}
 
     operator meka::package const&() const { return *this->package; }
 
-    meka::package const* package;
+    meka::package const* package = nullptr;
   };
 
   struct bin_type {
@@ -62,6 +64,8 @@ namespace meka {
   };
 
   struct package {
+    static meka::module_type root;
+
     typedef std::function< void (meka::package&) > manipulator;
     typedef std::vector< manipulator >             manipulators;
 
@@ -70,6 +74,9 @@ namespace meka {
       for (auto const& manipulate : package::manipulators { std::forward< Ts >(ts) ... }) {
         manipulate(*this);
       }
+
+      if (this->path.string().empty())
+        package::root = meka::module_type { *this };
     }
 
     bfs::path   path;

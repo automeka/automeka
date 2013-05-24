@@ -3,27 +3,21 @@
 #include <fstream>
 
 namespace meka {
-  extern meka::package self;
-}
 
-extern "C" int main(int argc, char const* argv[]) {
-  namespace bfs = ::boost::filesystem;
+  void main(std::string const& program, std::vector< std::string > const& arguments) {
+    namespace bfs = ::boost::filesystem;
 
-  if (!bfs::exists("build"))
-    bfs::create_directory("build");
+    if (!bfs::exists("build"))
+      bfs::create_directory("build");
 
-  if (!bfs::exists("build/build.ninja"))
-    meka::configure(meka::self);
+    if (!bfs::exists("build/build.ninja"))
+      meka::configure(package::root);
 
-  meka::build(meka::self);
-
-  return 0;
-}
-
-namespace meka {
+    meka::build(package::root);
+  }
 
   meka::package self = {
-    path    = meka::parent_path(meka::this_dir().string()),
+    path    = meka::root_path,
     name    = "meka",
     version = "0.0.1",
 

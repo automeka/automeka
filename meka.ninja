@@ -31,8 +31,8 @@ ar    = ar
 cp    = cp -fr
 ln    = ln -fs
 incdirs = -Iinclude
-cflags  = -std=c++11 -fpic -Qunused-arguments
-ldflags = -L/usr/local/lib -L$builddir/lib -Wl,-rpath,$builddir/lib
+cflags  = -std=c++11 -fpic -Qunused-arguments -g -O0
+ldflags = -L$builddir/lib -Wl,-rpath,$builddir/lib -L/usr/local/lib
 
 libpfx = lib
 arcpfx = lib
