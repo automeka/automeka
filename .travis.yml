@@ -5,7 +5,7 @@ script:
   - export NINJA="./bin/ninja/ninja"
   - cd bin/ninja && ./bootstrap.py && ./configure.py && cd -
   - $NINJA -f bootstrap.ninja
-  - $NINJA
+  - ./build/meka
 compiler:
   - clang
 before_install:

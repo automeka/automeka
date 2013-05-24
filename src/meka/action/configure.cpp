@@ -21,8 +21,6 @@ namespace meka {
   namespace bfs = ::boost::filesystem;
 
   static void genrules(meka::package const& package, std::unordered_map< std::string, std::string >& rules) {
-    std::clog << "package: " << package.name << ", path: " << package.path << std::endl;
-
     auto const& objout = [](std::string const& name) {
                            return "${builddir}/obj/" + name + "${objext}";
                          };
@@ -69,10 +67,6 @@ namespace meka {
     }
 
     for (auto const& bin : package.bins) {
-      std::clog << "found bin: " << bin.name << std::endl;
-      for(auto const& src : bin.sources) {
-        std::clog << "  - " << src << std::endl;
-      }
       addbin(bin.name, "exe");
     }
     for (auto const& lib : package.libs) {
@@ -151,9 +145,7 @@ namespace meka {
     std::unordered_map< std::string, std::string > rules;
     meka::genrules(package, rules);
 
-    std::ofstream ninja {
-      (bfs::current_path() / "build/build.ninja").string()
-    };
+    std::ofstream ninja { (bfs::current_path() / "build/build.ninja").string() };
 
     ninja << "include meka.ninja\n";
     ninja << std::endl;

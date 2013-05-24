@@ -38,7 +38,7 @@ namespace meka {
   }
 
   static inline bfs::path parent_path(std::string const& file) {
-    return meka::relative_path(bfs::current_path(), bfs::canonical(bfs::path(file)).parent_path());
+    return meka::relative_path(bfs::current_path(), bfs::path(file).parent_path());
   }
 
 #define this_dir() parent_path(__FILE__)

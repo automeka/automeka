@@ -2,20 +2,20 @@ include meka.ninja
 
 cflags = $cflags -DMEKA_BOOTSTRAP_MEKA
 
-build $builddir/src/meka/action/indent$objext:    cxx src/meka/action/indent.cpp
-build $builddir/src/meka/action/test$objext:      cxx src/meka/action/test.cpp
-build $builddir/src/meka/action/install$objext:   cxx src/meka/action/install.cpp
-build $builddir/src/meka/action/configure$objext: cxx src/meka/action/configure.cpp
-build $builddir/src/meka/action/build$objext:     cxx src/meka/action/build.cpp
-build $builddir/src/meka/action/pack$objext:      cxx src/meka/action/pack.cpp
-build $builddir/meka$objext:                      cxx meka
-build $builddir/meka$exeext: exe $builddir/meka$objext $
-                                 $builddir/src/meka/action/pack$objext $
-                                 $builddir/src/meka/action/configure$objext $
-                                 $builddir/src/meka/action/build$objext $
-                                 $builddir/src/meka/action/test$objext $
-                                 $builddir/src/meka/action/indent$objext $
-                                 $builddir/src/meka/action/install$objext
+build $builddir/obj/src/meka/action/indent$objext:    cxx src/meka/action/indent.cpp
+build $builddir/obj/src/meka/action/test$objext:      cxx src/meka/action/test.cpp
+build $builddir/obj/src/meka/action/install$objext:   cxx src/meka/action/install.cpp
+build $builddir/obj/src/meka/action/configure$objext: cxx src/meka/action/configure.cpp
+build $builddir/obj/src/meka/action/build$objext:     cxx src/meka/action/build.cpp
+build $builddir/obj/src/meka/action/pack$objext:      cxx src/meka/action/pack.cpp
+build $builddir/obj/meka$objext:                      cxx meka
+build $builddir/meka$exeext: exe $builddir/obj/meka$objext $
+                                 $builddir/obj/src/meka/action/pack$objext $
+                                 $builddir/obj/src/meka/action/configure$objext $
+                                 $builddir/obj/src/meka/action/build$objext $
+                                 $builddir/obj/src/meka/action/test$objext $
+                                 $builddir/obj/src/meka/action/indent$objext $
+                                 $builddir/obj/src/meka/action/install$objext
   libs = -lboost_filesystem -lboost_system -lboost_regex
 
 default $builddir/meka$exeext
