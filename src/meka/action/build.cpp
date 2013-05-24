@@ -19,7 +19,7 @@
 namespace meka {
 
   void build(meka::package const& package) {
-    std::system("ninja -f build/build.ninja");
+    std::system("${NINJA:-ninja} -f build/build.ninja");
   }
 
 }
