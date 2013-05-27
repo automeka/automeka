@@ -12,7 +12,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
-#include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <unordered_map>
 #include <fstream>
@@ -21,45 +21,45 @@ namespace meka {
   namespace bfs = ::boost::filesystem;
 
   static void genrules(meka::package const& package, std::unordered_map< std::string, std::string >& rules) {
-    auto const& objout = [](std::string const& name) {
-                           return "${builddir}/obj/" + name + "${objext}";
-                         };
-    auto const& libout = [](std::string const& name, std::string const& version) {
-                           return "${builddir}/lib/${libpfx}" + name + "${libext}" + (version.empty() ? "" : "." + version);
-                         };
-    auto const& exeout = [](std::string const& name) {
-                           return "${builddir}/bin/" + name + "${exeext}";
-                         };
-    auto const& incout = [](std::string const& name) {
-                           return "${builddir}/" + name;
-                         };
+    auto const& objout = [] (std::string const & name) {
+      return "${builddir}/obj/" + name + "${objext}";
+    };
+    auto const& libout = [] (std::string const & name, std::string const & version) {
+      return "${builddir}/lib/${libpfx}" + name + "${libext}" + (version.empty() ? "" : "." + version);
+    };
+    auto const& exeout = [] (std::string const & name) {
+      return "${builddir}/bin/" + name + "${exeext}";
+    };
+    auto const& incout = [] (std::string const & name) {
+      return "${builddir}/" + name;
+    };
 
-    auto const& addbin = [&](std::string const& binname, std::string const& type) {
-                           std::string const& binout = type == "lib" ? libout(binname, package.version) : exeout(binname);
-                           rules.emplace(binout, type);
-                         };
-    auto const& addobj = [&](std::string const& binname, std::string const& objname, std::string const& source, std::string const& incdirs) {
-                           rules.emplace(objname, "cxx " + source + "\n  incdirs = " + incdirs);
-                           rules[binname] += " " + objname;
-                         };
-    auto const& addlinks = [&](std::string const& binname, std::vector< std::string > const& links) {
-                             rules[binname] += "\n  libs =";
-                             for (auto const& link : links) {
-                               rules[binname] += " -l" + link;
-                             }
-                           };
-    auto const& addlns = [&](std::string const& libname, std::string const& version) {
-                           std::string const& soversion = version.substr(0, version.find('.'));
-                           rules.emplace(libout(libname, soversion), "ln " + libout(libname, version));
-                           rules.emplace(libout(libname, ""), "ln " + libout(libname, soversion));
-                         };
-    auto const& addincl = [&](std::string const& target, std::string const& source) {
-                            rules.emplace(target, "copy " + source);
-                          };
+    auto const& addbin = [&](std::string const & binname, std::string const & type) {
+      std::string const& binout = type == "lib" ? libout(binname, package.version) : exeout(binname);
+      rules.emplace(binout, type);
+    };
+    auto const& addobj = [&](std::string const & binname, std::string const & objname, std::string const & source, std::string const & incdirs) {
+      rules.emplace(objname, "cxx " + source + "\n  incdirs = " + incdirs);
+      rules[binname] += " " + objname;
+    };
+    auto const& addlinks = [&](std::string const & binname, std::vector< std::string > const & links) {
+      rules[binname] += "\n  libs =";
+      for (auto const& link : links) {
+        rules[binname] += " -l" + link;
+      }
+    };
+    auto const& addlns = [&](std::string const & libname, std::string const & version) {
+      std::string const& soversion = version.substr(0, version.find('.'));
+      rules.emplace(libout(libname, soversion), "ln " + libout(libname, version));
+      rules.emplace(libout(libname, ""), "ln " + libout(libname, soversion));
+    };
+    auto const& addincl = [&](std::string const & target, std::string const & source) {
+      rules.emplace(target, "copy " + source);
+    };
 
     std::vector< std::string > idirs = { "-I" + (package.path / "src").string(), "-I" + (package.path / "include").string() };
-    std::transform(std::begin(package.modules), std::end(package.modules), std::back_inserter(idirs), [](meka::package const& module) { return "-I" + (module.path / "include").string();
-                   });
+
+    std::transform(std::begin(package.modules), std::end(package.modules), std::back_inserter(idirs), [] (meka::package const & module) { return "-I" + (module.path / "include").string(); });
     std::string const& incdirs = boost::algorithm::join(idirs, " ");
 
     for (meka::package const& module : package.modules) {
@@ -82,6 +82,7 @@ namespace meka {
         case bfs::directory_file:
         case bfs::type_unknown:
           continue;
+
         case bfs::regular_file:
         case bfs::symlink_file:
         case bfs::block_file:
@@ -142,16 +143,41 @@ namespace meka {
   } // genrules
 
   void configure(meka::package const& package) {
+    if (!bfs::exists("build"))
+      bfs::create_directory("build");
+
     std::unordered_map< std::string, std::string > rules;
     meka::genrules(package, rules);
 
-    std::ofstream ninja { (bfs::current_path() / "build/build.ninja").string() };
+    std::ofstream build {(bfs::current_path() / "build/build.ninja").string()};
 
-    ninja << "include meka.ninja\n";
-    ninja << std::endl;
+    build << "include meka.ninja\n";
+    build << std::endl;
 
     for (auto const& pair : rules) {
-      ninja << "build " << pair.first << ": " << pair.second << std::endl;
+      build << "build " << pair.first << ": " << pair.second << std::endl;
+    }
+
+    std::ofstream install {(bfs::current_path() / "build/install.ninja").string()};
+
+    install << "include meka.ninja\n";
+    install << "prefix = /usr/local\n";
+    install << std::endl;
+
+    std::string const objprefix {"${builddir}/obj/"};
+    for (auto const& pair : rules) {
+      if (pair.first.substr(0, objprefix.size()) == objprefix)
+        continue;
+
+      if (pair.first == "${builddir}/bin/../meka${exeext}")
+        continue;
+
+      if (pair.first.find("${libext}") == pair.first.size() - 15)
+        install << "build " << boost::replace_first_copy(pair.first, "${builddir}", "${prefix}") << ": inslib " << pair.first << std::endl;
+      else if (pair.first.find("${exeext}") == pair.first.size() - 9)
+        install << "build " << boost::replace_first_copy(pair.first, "${builddir}", "${prefix}") << ": insexe " << pair.first << std::endl;
+      else
+        install << "build " << boost::replace_first_copy(pair.first, "${builddir}", "${prefix}") << ": insfil " << pair.first << std::endl;
     }
   }
 

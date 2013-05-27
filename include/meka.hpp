@@ -11,9 +11,6 @@
 #include <meka/package.hpp>
 #include <meka/path.hpp>
 
-#include <meka/action/configure.hpp>
-#include <meka/action/build.hpp>
-
 #include <meka/manip/setter.hpp>
 #include <meka/manip/appender.hpp>
 

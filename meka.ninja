@@ -29,8 +29,9 @@ ninja = $${NINJA:-ninja}
 cxx   = $${CXX:-clang++}
 ar    = ar
 cp    = cp -fr
+ins   = cp -fd
 ln    = ln -fs
-incdirs = -Iinclude
+incdirs = -Iinclude -Isrc
 cflags  = -std=c++11 -fpic -Qunused-arguments -g -O0
 ldflags = -L$builddir/lib -Wl,-rpath,$builddir/lib -L/usr/local/lib
 
@@ -66,6 +67,18 @@ rule ln
 rule copy
   command = $cp $in $out
   description = ${cylw}CP${crst}  ${ccyn}$out${crst}
+
+rule insfil
+  command = $ins $in $out
+  description = ${cylw}INS${crst} ${ccyn}$out${crst}
+
+rule insexe
+  command = $ins $in $out && chrpath -d $out
+  description = ${cylw}INS${crst} ${ccyn}$out${crst}
+
+rule inslib
+  command = $ins $in $out && chrpath -d $out
+  description = ${cylw}INS${crst} ${ccyn}$out${crst}
 
 rule configure
   command = $builddir/meka$exeext configure

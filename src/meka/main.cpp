@@ -7,6 +7,13 @@
 
 #include "meka.hpp"
 
+#include "meka/action/indent.hpp"
+#include "meka/action/configure.hpp"
+#include "meka/action/build.hpp"
+#include "meka/action/test.hpp"
+#include "meka/action/install.hpp"
+#include "meka/action/pack.hpp"
+
 #include "corefungi.hpp"
 
 namespace meka {
@@ -19,33 +26,18 @@ namespace meka {
 
     std::string const command = cfg::get("program.arguments.#0");
 
-    // meka::indent(package::root);
     if (command == "indent")
-      return;
-
-    meka::configure(package::root);
-
-    if (command == "configure")
-      return;
-
-    meka::build(package::root);
-
-    if (command == "build")
-      return;
-
-    // meka::test(package::root);
-
-    if (command == "test")
-      return;
-
-    // meka::install(package::root);
-
-    if (command == "install")
-      return;
-
-    // meka::pack(package::root);
-    if (command == "package")
-      return;
+      meka::indent(package::root);
+    else if (command == "configure")
+      meka::configure(package::root);
+    else if (command == "build")
+      meka::build(package::root);
+    else if (command == "test")
+      meka::test(package::root);
+    else if (command == "install")
+      meka::install(package::root);
+    else if (command == "package")
+      meka::pack(package::root);
   }
 
 }

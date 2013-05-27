@@ -7,18 +7,17 @@
 
 #include "meka/action/build.hpp"
 
+#include "meka/action/configure.hpp"
 #include "meka/package.hpp"
 
 #include <boost/filesystem.hpp>
-#include <boost/regex.hpp>
-#include <boost/algorithm/string/join.hpp>
-
-#include <unordered_map>
-#include <fstream>
 
 namespace meka {
 
   void build(meka::package const& package) {
+    if (!bfs::exists("build/build.ninja"))
+      meka::configure(package);
+
     std::system("${NINJA:-ninja} -f build/build.ninja");
   }
 

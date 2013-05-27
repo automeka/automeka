@@ -7,10 +7,21 @@
 
 #include "meka/action/install.hpp"
 
+#include "meka/action/configure.hpp"
+#include "meka/action/build.hpp"
 #include "meka/package.hpp"
+
+#include <boost/filesystem.hpp>
 
 namespace meka {
 
-  void install(meka::package const& package) {}
+  void install(meka::package const& package) {
+    if (!bfs::exists("build/install.ninja"))
+      meka::configure(package);
+
+    meka::build(package);
+
+    std::system("${NINJA:-ninja} -f build/install.ninja");
+  }
 
 }
