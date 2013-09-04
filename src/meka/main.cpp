@@ -21,6 +21,12 @@ namespace meka {
 
   meka::module_type package::root;
 
+  // static cfg::sprout const o = {
+  //   "Meka options", {
+  //     { "meka.prefix","Change installation prefix", cfg::long_name = "prefix", cfg::default_ = "/usr/local" }
+  //   }
+  // };
+
   void main(std::string const& program, std::vector< std::string > const& arguments) {
     cfg::init(program, arguments.empty() ? std::vector< std::string > { "build" } : arguments);
 

@@ -2,8 +2,8 @@
 
 #ifdef MEKA_BOOTSTRAP_MEKA
 
-#include <meka/action/configure.hpp>
-#include <meka/action/build.hpp>
+# include <meka/action/configure.hpp>
+# include <meka/action/build.hpp>
 
 namespace meka {
 
@@ -62,7 +62,7 @@ namespace meka {
       // meka::host
     },
 
-    meka::bin  {
+    meka::bin {
       name    = "meka",
       sources = { "src/meka.cpp" },
       links   = { "meka", "boost_filesystem","boost_system", "boost_regex" }

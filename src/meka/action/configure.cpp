@@ -10,14 +10,18 @@
 #include "meka/path.hpp"
 #include "meka/package.hpp"
 
+#include "corefungi.hpp"
+
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
 
 #include <unordered_map>
 #include <fstream>
+#include <sstream>
 
 namespace meka {
+  namespace cfg = ::corefungi;
   namespace bfs = ::boost::filesystem;
 
   static void genrules(meka::package const& package, std::unordered_map< std::string, std::string >& rules) {
@@ -149,22 +153,40 @@ namespace meka {
     std::unordered_map< std::string, std::string > rules;
     meka::genrules(package, rules);
 
-    std::ofstream build {(bfs::current_path() / "build/build.ninja").string()};
+    std::ofstream compile_stream {(bfs::current_path() / "build/build.ninja").string()};
+    std::ofstream install_stream {(bfs::current_path() / "build/install.ninja").string()};
+    std::ofstream package_stream {(bfs::current_path() / "build/package.ninja").string()};
 
-    build << "include meka.ninja\n";
-    build << std::endl;
-
-    for (auto const& pair : rules) {
-      build << "build " << pair.first << ": " << pair.second << std::endl;
+    for(auto stream : {&compile_stream, &install_stream, &package_stream}) {
+      *stream << "include meka.ninja\n";
+      *stream << "package = " << package.name << "_" << package.version << "\n";
     }
 
-    std::ofstream install {(bfs::current_path() / "build/install.ninja").string()};
+    install_stream << "prefix = /usr/local\n\n"; // << bfs::absolute(cfg::get("meka.prefix")).string() << "\n";
+    package_stream << "prefix = ${builddir}/package/${package}\n\n"; // << bfs::absolute(cfg::get("meka.prefix")).string() << "\n";
+    package_stream << "sprefix = ${builddir}/package/sources/${package}\n\n"; // << bfs::absolute(cfg::get("meka.prefix")).string() << "\n";
 
-    install << "include meka.ninja\n";
-    install << "prefix = /usr/local\n";
-    install << std::endl;
 
+    std::stringstream sources_stream;
     std::string const objprefix {"${builddir}/obj/"};
+    for (auto const& pair : rules) {
+      compile_stream << "build " << pair.first << ": " << pair.second << "\n";
+
+      if (pair.first.substr(0, objprefix.size()) != objprefix)
+        continue;
+
+      auto const from = pair.second.find(' ') + 1;
+      auto const& source = std::string{pair.second, from, pair.second.find('\n') - from};
+      package_stream << "build ${sprefix}/" << source << ": insfil " << source << "\n";
+      sources_stream << "$\n      ${sprefix}/" << source << " ";
+    }
+
+    package_stream << "build ${prefix}_sources.tar.xz" << ": packg " << sources_stream.str() << "\n";
+    package_stream << "  source = ${package}\n";
+    package_stream << "  folder = ${sprefix}/..\n";
+
+
+    std::stringstream target_stream;
     for (auto const& pair : rules) {
       if (pair.first.substr(0, objprefix.size()) == objprefix)
         continue;
@@ -172,13 +194,22 @@ namespace meka {
       if (pair.first == "${builddir}/bin/../meka${exeext}")
         continue;
 
-      if (pair.first.find("${libext}") == pair.first.size() - 15)
-        install << "build " << boost::replace_first_copy(pair.first, "${builddir}", "${prefix}") << ": inslib " << pair.first << std::endl;
-      else if (pair.first.find("${exeext}") == pair.first.size() - 9)
-        install << "build " << boost::replace_first_copy(pair.first, "${builddir}", "${prefix}") << ": insexe " << pair.first << std::endl;
-      else
-        install << "build " << boost::replace_first_copy(pair.first, "${builddir}", "${prefix}") << ": insfil " << pair.first << std::endl;
+      auto const& target = boost::replace_first_copy(pair.first, "${builddir}", "${prefix}");
+      for(auto stream : {&install_stream, &package_stream}) {
+        if (pair.first.find("${libext}") == pair.first.size() - 15)
+          *stream << "build " << target << ": inslib " << pair.first << "\n";
+        else if (pair.first.find("${exeext}") == pair.first.size() - 9)
+          *stream << "build " << target << ": insexe " << pair.first << "\n";
+        else
+          *stream << "build " << target << ": insfil " << pair.first << "\n";
+      }
+
+      target_stream << "$\n      " << target << " ";
     }
+
+    package_stream << "build ${prefix}.tar.xz" << ": packg " << target_stream.str() << "\n";
+    package_stream << "  source = ${package}\n";
+    package_stream << "  folder = ${prefix}/..\n";
   }
 
 }

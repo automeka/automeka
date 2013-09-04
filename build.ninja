@@ -18,4 +18,8 @@ build $builddir/meka$exeext: exe $builddir/obj/meka$objext $
                                  $builddir/obj/src/meka/action/install$objext
   libs = -lboost_filesystem -lboost_system -lboost_regex
 
+build $builddir/meka.tar.gz: download
+  name = berenm/meka
+  version = master
+
 default $builddir/meka$exeext

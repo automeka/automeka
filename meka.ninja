@@ -29,8 +29,11 @@ ninja = $${NINJA:-ninja}
 cxx   = $${CXX:-clang++}
 ar    = ar
 cp    = cp -fr
-ins   = cp -fd
+cpl   = cp -fd
+ins   = install -D
 ln    = ln -fs
+tar   = tar
+wget  = wget
 incdirs = -Iinclude -Isrc
 cflags  = -std=c++11 -fpic -Qunused-arguments -g -O0
 ldflags = -L$builddir/lib -Wl,-rpath,$builddir/lib -L/usr/local/lib
@@ -41,6 +44,10 @@ exeext =
 libext = .so
 arcext = .a
 objext = .o
+
+rule download
+  command = $wget https://github.com/$name/archive/$version.tar.gz -q -O - | (cd $builddir && tar xzf -)
+  description = ${cylw}DLD${crst} ${ccyn}$name${crst} @${cprp}$version${crst}
 
 rule cxx
   command = $cxx -MMD -MT $out -MF $out.d $cflags $incdirs -xc++ -c $in -o $out
@@ -69,16 +76,20 @@ rule copy
   description = ${cylw}CP${crst}  ${ccyn}$out${crst}
 
 rule insfil
-  command = $ins $in $out
+  command = $ins $in $out && $cpl $in $out
   description = ${cylw}INS${crst} ${ccyn}$out${crst}
 
 rule insexe
-  command = $ins $in $out && chrpath -d $out
+  command = $ins $in $out && $cpl $in $out && chrpath -d $out
   description = ${cylw}INS${crst} ${ccyn}$out${crst}
 
 rule inslib
-  command = $ins $in $out && chrpath -d $out
+  command = $ins $in $out && $cpl $in $out && chrpath -d $out
   description = ${cylw}INS${crst} ${ccyn}$out${crst}
+
+rule packg
+  command = $tar cf $out -C $folder $source
+  description = ${cylw}PKG${crst} ${ccyn}$out${crst}
 
 rule configure
   command = $builddir/meka$exeext configure
