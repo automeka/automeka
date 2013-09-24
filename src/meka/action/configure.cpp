@@ -43,7 +43,7 @@ namespace meka {
       rules.emplace(binout, type);
     };
     auto const& addobj = [&](std::string const & binname, std::string const & objname, std::string const & source, std::string const & incdirs) {
-      rules.emplace(objname, "cxx " + source + "\n  incdirs = " + incdirs);
+      rules.emplace(objname, (bfs::extension(source) == ".c" ? "cc  " + source : "cxx " + source) + "\n  incdirs = " + incdirs);
       rules[binname] += " " + objname;
     };
     auto const& addlinks = [&](std::string const & binname, std::vector< std::string > const & links) {

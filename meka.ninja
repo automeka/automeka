@@ -27,6 +27,7 @@ cbrst = ${crst}[1m
 
 ninja = $${NINJA:-ninja}
 cxx   = $${CXX:-clang++}
+cc    = $${CXX:-clang}
 ar    = ar
 cp    = cp -fr
 cpl   = cp -fd
@@ -34,9 +35,10 @@ ins   = install -D
 ln    = ln -fs
 tar   = tar
 wget  = wget
-incdirs = -Iinclude -Isrc
-cflags  = -std=c++11 -fpic -Qunused-arguments -g -O0
-ldflags = -L$builddir/lib -Wl,-rpath,$builddir/lib -L/usr/local/lib
+incdirs  = -Iinclude -Isrc
+cflags   = -std=c11 -fpic -Qunused-arguments -g -O0
+cxxflags = -std=c++11 -fpic -Qunused-arguments -g -O0
+ldflags  = -L$builddir/lib -Wl,-rpath,$builddir/lib -L/usr/local/lib
 
 libpfx = lib
 arcpfx = lib
@@ -50,7 +52,13 @@ rule download
   description = ${cylw}DLD${crst} ${ccyn}$name${crst} @${cprp}$version${crst}
 
 rule cxx
-  command = $cxx -MMD -MT $out -MF $out.d $cflags $incdirs -xc++ -c $in -o $out
+  command = $cxx -MMD -MT $out -MF $out.d $cxxflags $incdirs -xc++ -c $in -o $out
+  description = ${cylw}CXX${crst} ${cgrn}$out${crst}
+  depfile = $out.d
+  deps = gcc
+
+rule cc
+  command = $cc -MMD -MT $out -MF $out.d $cflags $incdirs -xc -c $in -o $out
   description = ${cylw}CXX${crst} ${cgrn}$out${crst}
   depfile = $out.d
   deps = gcc
