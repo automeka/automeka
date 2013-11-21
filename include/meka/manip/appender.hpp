@@ -15,8 +15,6 @@ namespace meka {
 
   template< typename T, template< typename S > class D >
   struct field_appender< std::vector< T >, D > {
-    constexpr field_appender() {}
-
     template< typename ... Ts >
     explicit constexpr field_appender(Ts&& ... ts) :
       data { std::forward< Ts >(ts) ... }
@@ -25,7 +23,7 @@ namespace meka {
     template< typename S >
     constexpr operator std::function< void(S&) >() const { return [ = ](S & subject)->void { (subject.*D< S >::pointer).push_back(this->data); }; }
 
-    T const data;
+    T data;
   };
 
   template< typename S > struct bins_field {

@@ -38,12 +38,12 @@ namespace meka {
     name    = "libcorefungi",
     version = "0.0.1",
 
-    modules   = { meka::yamlcpp },
+    modules = { meka::yamlcpp },
 
     meka::lib {
       name    = "corefungi",
       sources = { "src/.*\\.cpp" },
-      links   = { "yaml-cpp", "boost_program_options"}
+      links   = { "yaml-cpp", "boost_program_options" }
     },
   };
 
@@ -52,7 +52,7 @@ namespace meka {
     name    = "meka",
     version = "0.0.1",
 
-    modules   = { meka::corefungi },
+    modules = { meka::corefungi },
 
     meka::lib {
       name    = "meka",
@@ -65,7 +65,7 @@ namespace meka {
     meka::bin {
       name    = "meka",
       sources = { "src/meka.cpp" },
-      links   = { "meka", "boost_filesystem","boost_system", "boost_regex" }
+      links   = { "meka", "boost_filesystem", "boost_system", "boost_regex" }
 
       // meka::host
     },

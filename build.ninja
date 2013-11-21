@@ -1,6 +1,7 @@
 include meka.ninja
 
 cflags = $cflags -DMEKA_BOOTSTRAP_MEKA
+cxxflags = $cxxflags -DMEKA_BOOTSTRAP_MEKA
 
 build $builddir/obj/src/meka/action/indent$objext:    cxx src/meka/action/indent.cpp
 build $builddir/obj/src/meka/action/test$objext:      cxx src/meka/action/test.cpp
@@ -18,7 +19,7 @@ build $builddir/meka$exeext: exe $builddir/obj/meka$objext $
                                  $builddir/obj/src/meka/action/install$objext
   libs = -lboost_filesystem -lboost_system -lboost_regex
 
-build $builddir/meka.tar.gz: download
+build $builddir/meka-master/meka: download
   name = berenm/meka
   version = master
 
