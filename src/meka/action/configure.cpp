@@ -10,7 +10,7 @@
 #include "meka/path.hpp"
 #include "meka/package.hpp"
 
-#include "corefungi.hpp"
+// #include "corefungi.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
@@ -21,7 +21,7 @@
 #include <sstream>
 
 namespace meka {
-  namespace cfg = ::corefungi;
+  // namespace cfg = ::corefungi;
   namespace bfs = ::boost::filesystem;
 
   static void genrules(meka::package const& package, std::unordered_map< std::string, std::string >& rules) {
