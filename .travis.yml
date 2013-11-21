@@ -9,9 +9,15 @@ script:
 compiler:
   - clang
 before_install:
-  - sudo add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu/ saucy main universe"
-  - sudo add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu/ raring main universe"
-  - sudo add-apt-repository -y "deb http://llvm.org/apt/raring/ llvm-toolchain-raring main"
+  - sudo add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu/ trusty main universe"
+  - sudo add-apt-repository -y "deb http://llvm.org/apt/saucy/ llvm-toolchain-saucy main"
   - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
-  - sudo apt-get -qq update
-  - sudo apt-get -qq install g++-4.8 libboost1.53-all-dev clang-3.4 re2c
+  - sudo apt-get -qq install aptitude; sudo aptitude -yq2 update
+  - sudo aptitude -yq2 full-upgrade -t trusty python
+  - sudo aptitude -yq2 install -t trusty
+      g++
+      clang-3.4
+      libboost1.54-all-dev
+      cmake
+      ninja-build
+      libgl1-mesa-dev libegl1-mesa-dev libglu1-mesa-dev
