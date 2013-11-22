@@ -24,6 +24,14 @@
 using namespace std;
 using namespace boost;
 
+namespace std {
+  template< typename Iterator >
+  static inline Iterator begin(std::pair< Iterator, Iterator > const& iterators) { return iterators.first; }
+
+  template< typename Iterator >
+  static inline Iterator end(std::pair< Iterator, Iterator > const& iterators) { return iterators.second; }
+}
+
 namespace meka {
 
   enum files_e {
@@ -41,117 +49,110 @@ namespace meka {
   };
 
   struct print_visitor : public boost::bfs_visitor< > {
-    template< class Vertex, class Graph >
-    void discover_vertex(Vertex v, Graph&) { std::cout << name[v] << " "; }
+    template< typename Vertex, typename Graph >
+    void discover_vertex(Vertex&& v, Graph&&) { std::cout << name[v] << " "; }
   };
 
   struct cycle_detector : public boost::dfs_visitor< > {
     cycle_detector(bool& has_cycle) : has_cycle(has_cycle) {}
 
-    template< class Edge, class Graph >
-    void back_edge(Edge, Graph&) { has_cycle = true; }
+    template< typename Edge, typename Graph >
+    void back_edge(Edge&&, Graph&&) { has_cycle = true; }
 
     bool& has_cycle;
   };
 
-  int main(int, char*[]) {
-    typedef pair< int, int > Edge;
+  extern "C" int main(int, char*[]) {
+    typedef pair< size_t, size_t > edge_type;
 
-    Edge              used_by[] = {
-      Edge(dax_h, foo_cpp), Edge(dax_h, bar_cpp), Edge(dax_h, yow_h),
-      Edge(yow_h, bar_cpp), Edge(yow_h, zag_cpp),
-      Edge(boz_h, bar_cpp), Edge(boz_h, zig_cpp), Edge(boz_h, zag_cpp),
-      Edge(zow_h, foo_cpp),
-      Edge(foo_cpp, foo_o),
-      Edge(foo_o, libfoobar_a),
-      Edge(bar_cpp, bar_o),
-      Edge(bar_o, libfoobar_a),
-      Edge(libfoobar_a, libzigzag_a),
-      Edge(zig_cpp, zig_o),
-      Edge(zig_o, libzigzag_a),
-      Edge(zag_cpp, zag_o),
-      Edge(zag_o, libzigzag_a),
-      Edge(libzigzag_a, killerapp)
+    auto const edges = std::vector< edge_type > {
+      { dax_h, foo_cpp }, { dax_h, bar_cpp }, { dax_h, yow_h },
+      { yow_h, bar_cpp }, { yow_h, zag_cpp },
+      { boz_h, bar_cpp }, { boz_h, zig_cpp }, { boz_h, zag_cpp },
+      { zow_h, foo_cpp },
+      { foo_cpp, foo_o },
+      { foo_o, libfoobar_a },
+      { bar_cpp, bar_o },
+      { bar_o, libfoobar_a },
+      { libfoobar_a, libzigzag_a },
+      { zig_cpp, zig_o },
+      { zig_o, libzigzag_a },
+      { zag_cpp, zag_o },
+      { zag_o, libzigzag_a },
+      { libzigzag_a, killerapp }
     };
-    const std::size_t nedges = sizeof(used_by) / sizeof(Edge);
 
     typedef boost::adjacency_list< boost::vecS, boost::vecS, boost::bidirectionalS > graph_type;
     typedef boost::graph_traits< graph_type >::vertex_descriptor                     vertex_type;
 
-    auto graph = graph_type {};
+    auto graph = graph_type { std::begin(edges), std::end(edges), 14 };
 
     // Determine ordering for a full recompilation
     // and the order with files that can be compiled in parallel
     {
-      typedef std::list< vertex_type > MakeOrder;
+      auto make_order = std::vector< vertex_type > {};
 
-      MakeOrder::iterator i;
-      MakeOrder           make_order;
+      boost::topological_sort(graph, std::back_inserter(make_order));
+      std::reverse(std::begin(make_order), std::end(make_order));
 
-      boost::topological_sort(graph, std::front_inserter(make_order));
       std::cout << "make ordering: ";
-      for (i = make_order.begin(); i != make_order.end(); ++i) {
-        std::cout << name[*i] << " ";
-      }
-      std::cout << std::endl << std::endl;
+      for (auto const& i : make_order) { std::cout << name[i] << " "; }
+      std::cout << "\n";
 
-      // Parallel compilation ordering
-      std::vector< int > time(N, 0);
-      for (i = make_order.begin(); i != make_order.end(); ++i) {
-        // Walk through the in_edges an calculate the maximum time.
-        if (boost::in_degree(*i, graph) > 0) {
-          graph_type::in_edge_iterator j, j_end;
-          int                          maxdist = 0;
+      std::vector< size_t > node_times(N, 0);
+      for (auto const& i : make_order) {
+        if (boost::in_degree(i, graph) > 0) {
+          auto const& range = boost::in_edges(i, graph);
 
-          // Through the order from topological sort, we are sure that every
-          // time we are using here is already initialized.
-          for (boost::tie(j, j_end) = boost::in_edges(*i, graph); j != j_end; ++j) {
-            maxdist = (std::max) (time[boost::source(*j, graph)], maxdist);
-          }
-          time[*i] = maxdist + 1;
+          auto const& maxelt = std::max_element(
+            std::begin(range), std::end(range),
+            [&node_times, &graph](decltype(*range.first) const& a, decltype(*range.first) const& b) {
+              return node_times[boost::source(a, graph)] < node_times[boost::source(b, graph)];
+            });
+
+          node_times[i] = node_times[boost::source(*maxelt, graph)] + 1;
         }
       }
 
-      std::cout << "parallel make orderingraph, " << std::endl
-                << "vertices with same group number can be made in parallel" << std::endl;
+      std::cout << "parallel make orderingraph, " << "\n"
+                << "vertices with same group number can be made in parallel" << "\n";
       {
-        graph_traits< graph_type >::vertex_iterator i, iend;
-        for (boost::tie(i, iend) = boost::vertices(graph); i != iend; ++i) {
-          std::cout << "time_slot[" << name[*i] << "] = " << time[*i] << std::endl;
+        for (auto const& i : boost::vertices(graph)) {
+          std::cout << "time_slot[" << name[i] << "] = " << node_times[i] << "\n";
         }
       }
 
     }
-    std::cout << std::endl;
+    std::cout << "\n";
 
     // if I change yow.h what files need to be re-made?
     {
-      std::cout << "A change to yow.h will cause what to be re-made?" << std::endl;
+      std::cout << "A change to yow.h will cause what to be re-made?" << "\n";
       boost::breadth_first_search(graph, boost::vertex(yow_h, graph), boost::visitor(print_visitor {}));
-      std::cout << std::endl;
+      std::cout << "\n";
     }
-    std::cout << std::endl;
+    std::cout << "\n";
 
     // are there any cycles in the graph?
     {
       bool has_cycle = false;
       boost::depth_first_search(graph, boost::visitor(cycle_detector { has_cycle }));
-      std::cout << "The graph has a cycle? " << has_cycle << std::endl;
+      std::cout << "The graph has a cycle? " << has_cycle << "\n";
     }
-    std::cout << std::endl;
+    std::cout << "\n";
 
     // add a dependency going from bar.cpp to dax.h
     {
-      std::cout << "adding edge bar_cpp -> dax_h" << std::endl;
+      std::cout << "adding edge bar_cpp -> dax_h" << "\n";
       boost::add_edge(bar_cpp, dax_h, graph);
     }
-    std::cout << std::endl;
+    std::cout << "\n";
 
     // are there any cycles in the graph?
     {
       bool has_cycle = false;
       boost::depth_first_search(graph, boost::visitor(cycle_detector { has_cycle }));
-      std::cout << "The graph has a cycle now? " << has_cycle << std::endl;
+      std::cout << "The graph has a cycle now? " << has_cycle << "\n";
     }
 
     return 0;

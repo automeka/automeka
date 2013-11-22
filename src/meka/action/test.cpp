@@ -11,6 +11,6 @@
 
 namespace meka {
 
-  void test(meka::package const& package) {}
+  void test(meka::package_type const& package) {}
 
 }

@@ -10,8 +10,8 @@
 
 namespace meka {
 
-  struct package;
-  void install(meka::package const& package);
+  struct package_type;
+  void install(meka::package_type const& package);
 
 }
 

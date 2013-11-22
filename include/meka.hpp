@@ -17,8 +17,8 @@
 namespace meka {
   namespace bfs = boost::filesystem;
 
-  static auto const root_path = std::string {""};
-  static auto const meka      = meka::bin {
+  static std::string const root_path = "";
+  static meka::bin const   meka {
     name    = "../meka",
     sources = { "meka" },
     links   = { "meka", "boost_filesystem", "boost_system", "boost_regex" }

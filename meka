@@ -7,11 +7,11 @@
 
 namespace meka {
 
-  meka::module_type meka::package::root;
+  std::vector< meka::module_type > package_type::list;
 
   extern "C" int main(int argc, char const* argv[]) {
-    meka::configure(meka::package::root);
-    meka::build(meka::package::root);
+    meka::configure(meka::package::root());
+    meka::build(meka::package::root());
 
     return 0;
   }
@@ -29,7 +29,7 @@ namespace meka {
 
     meka::lib {
       name    = "yaml-cpp",
-      sources = { "src/.*\\.cpp" }
+      sources = { "src/.*\\.cpp" },
     },
   };
 
@@ -37,13 +37,17 @@ namespace meka {
     path    = meka::this_dir() / "lib/libcorefungi",
     name    = "libcorefungi",
     version = "0.0.1",
+//    require = { { "yaml-cpp", version >= "1.5.0" && version < "2.0.0", scope = "build" },
+//                { "boost-program-options", version == "1.54", scope = "build" }, }
 
     modules = { meka::yamlcpp },
 
     meka::lib {
       name    = "corefungi",
       sources = { "src/.*\\.cpp" },
-      links   = { "yaml-cpp", "boost_program_options" }
+      links   = { "yaml-cpp", "boost_program_options" },
+
+      // imports = { "yaml-cpp", "boost-program-options" },
     },
   };
 
@@ -56,8 +60,12 @@ namespace meka {
 
     meka::lib {
       name    = "meka",
-      sources = { "src/meka/.*\\.cpp" },
-      links   = { "corefungi" }
+      sources = { "src/meka/action/.*\\.cpp", "src/meka/package.cpp", "src/meka/main.cpp" },
+      links   = { "corefungi" },
+
+      // headers = { "include/.*\\.hpp" },
+      // imports = { "corefungi" },
+      // incdirs = { "include" },
 
       // meka::host
     },
@@ -65,7 +73,19 @@ namespace meka {
     meka::bin {
       name    = "meka",
       sources = { "src/meka.cpp" },
-      links   = { "meka", "boost_filesystem", "boost_system", "boost_regex" }
+      links   = { "meka", "corefungi", "boost_filesystem", "boost_system", "boost_regex" },
+
+      // imports = { "meka", "corefungi", "boost_filesystem", "boost_system", "boost_regex" },
+
+      // meka::host
+    },
+
+    meka::bin {
+      name    = "meka-graph",
+      sources = { "src/meka/graph.cpp" },
+      links   = { "corefungi", "boost_filesystem", "boost_system", "boost_regex" },
+
+      // imports = { "corefungi", "boost_filesystem", "boost_system", "boost_regex" },
 
       // meka::host
     },

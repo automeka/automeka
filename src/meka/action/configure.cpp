@@ -24,7 +24,7 @@ namespace meka {
   // namespace cfg = ::corefungi;
   namespace bfs = ::boost::filesystem;
 
-  static void genrules(meka::package const& package, std::unordered_map< std::string, std::string >& rules) {
+  static void genrules(meka::package_type const& package, std::unordered_map< std::string, std::string >& rules) {
     auto const& objout = [] (std::string const & name) {
       return "${builddir}/obj/" + name + "${objext}";
     };
@@ -63,10 +63,10 @@ namespace meka {
 
     std::vector< std::string > idirs = { "-I" + (package.path / "src").string(), "-I" + (package.path / "include").string() };
 
-    std::transform(std::begin(package.modules), std::end(package.modules), std::back_inserter(idirs), [] (meka::package const & module) { return "-I" + (module.path / "include").string(); });
+    std::transform(std::begin(package.modules), std::end(package.modules), std::back_inserter(idirs), [] (meka::package_type const & module) { return "-I" + (module.path / "include").string(); });
     std::string const& incdirs = boost::algorithm::join(idirs, " ");
 
-    for (meka::package const& module : package.modules) {
+    for (meka::package_type const& module : package.modules) {
       meka::genrules(module, rules);
     }
 
@@ -146,7 +146,7 @@ namespace meka {
     }
   } // genrules
 
-  void configure(meka::package const& package) {
+  void configure(meka::package_type const& package) {
     if (!bfs::exists("build"))
       bfs::create_directory("build");
 

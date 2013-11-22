@@ -9,8 +9,10 @@ build $builddir/obj/src/meka/action/install$objext:   cxx src/meka/action/instal
 build $builddir/obj/src/meka/action/configure$objext: cxx src/meka/action/configure.cpp
 build $builddir/obj/src/meka/action/build$objext:     cxx src/meka/action/build.cpp
 build $builddir/obj/src/meka/action/pack$objext:      cxx src/meka/action/pack.cpp
+build $builddir/obj/src/meka/package$objext:          cxx src/meka/package.cpp
 build $builddir/obj/meka$objext:                      cxx meka
 build $builddir/meka$exeext: exe $builddir/obj/meka$objext $
+                                 $builddir/obj/src/meka/package$objext $
                                  $builddir/obj/src/meka/action/pack$objext $
                                  $builddir/obj/src/meka/action/configure$objext $
                                  $builddir/obj/src/meka/action/build$objext $

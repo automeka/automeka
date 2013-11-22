@@ -10,8 +10,8 @@
 
 namespace meka {
 
-  struct package;
-  void pack(meka::package const& package);
+  struct package_type;
+  void pack(meka::package_type const& package);
 
 }
 

@@ -19,13 +19,12 @@
 namespace meka {
   namespace cfg = ::corefungi;
 
-  meka::module_type package::root;
-
   // static cfg::sprout const o = {
-  //   "Meka options", {
-  //     { "meka.prefix","Change installation prefix", cfg::long_name = "prefix", cfg::default_ = "/usr/local" }
-  //   }
+  // "Meka options", {
+  // { "meka.prefix","Change installation prefix", cfg::long_name = "prefix", cfg::default_ = "/usr/local" }
+  // }
   // };
+  std::vector< meka::module_type > package_type::list;
 
   void main(std::string const& program, std::vector< std::string > const& arguments) {
     cfg::init(program, arguments.empty() ? std::vector< std::string > { "build" } : arguments);
@@ -33,17 +32,17 @@ namespace meka {
     std::string const command = cfg::get("program.arguments.#0");
 
     if (command == "indent")
-      meka::indent(package::root);
+      meka::indent(package_type::root());
     else if (command == "configure")
-      meka::configure(package::root);
+      meka::configure(package_type::root());
     else if (command == "build")
-      meka::build(package::root);
+      meka::build(package_type::root());
     else if (command == "test")
-      meka::test(package::root);
+      meka::test(package_type::root());
     else if (command == "install")
-      meka::install(package::root);
+      meka::install(package_type::root());
     else if (command == "package")
-      meka::pack(package::root);
+      meka::pack(package_type::root());
   }
 
 }

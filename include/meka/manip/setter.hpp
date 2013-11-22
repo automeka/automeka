@@ -8,60 +8,59 @@
 #ifndef __MEKA_MANIP_SETTER_HPP__
 #define __MEKA_MANIP_SETTER_HPP__
 
+#include "meka/manip/manipulable.hpp"
+
 namespace meka {
 
-  template< typename T, template< typename S > class D >
+  template< typename T, template< typename Subject > class Field >
   struct field_setter {
-    constexpr field_setter() {}
-
     template< typename ... Ts >
-    explicit constexpr field_setter(Ts&& ... ts) :
+    constexpr explicit field_setter(Ts&& ... ts) :
       data { std::forward< Ts >(ts) ... }
     {}
 
-    template< typename U >
-    constexpr field_setter operator=(U&& v) const { return field_setter { std::forward< U >(v) }; }
+    constexpr field_setter operator=(T&& v) const
+    { return field_setter { std::move(v) }; }
 
-    constexpr field_setter operator=(T&& v) const { return field_setter { std::move(v) }; }
-
-    template< typename S >
-    constexpr operator std::function< void(S&) >() const { return [ = ](S & subject)->void { subject.*D< S >::pointer = this->data; }; }
+    template< typename Subject >
+    constexpr operator std::function< void(Subject&) >() const
+    { return [ = ](Subject & subject) { (subject.*Field< Subject >::pointer) = this->data; }; }
 
     T const data;
   };
 
-  template< typename S > struct path_field {
-    static constexpr bfs::path S::* pointer = &S::path;
+  template< typename Subject > struct path_field {
+    static constexpr bfs::path Subject::* const pointer = &Subject::path;
   };
   static field_setter< bfs::path, path_field > const path;
 
-  template< typename S > struct name_field {
-    static constexpr std::string S::* pointer = &S::name;
+  template< typename Subject > struct name_field {
+    static constexpr std::string Subject::* const pointer = &Subject::name;
   };
   static field_setter< std::string, name_field > const name;
 
-  template< typename S > struct version_field {
-    static constexpr std::string S::* pointer = &S::version;
+  template< typename Subject > struct version_field {
+    static constexpr std::string Subject::* const pointer = &Subject::version;
   };
   static field_setter< std::string, version_field > const version;
 
-  template< typename S > struct sources_field {
-    static constexpr std::vector< std::string > S::* pointer = &S::sources;
+  template< typename Subject > struct sources_field {
+    static constexpr std::vector< std::string > Subject::* const pointer = &Subject::sources;
   };
   static field_setter< std::vector< std::string >, sources_field > const sources;
 
-  template< typename S > struct links_field {
-    static constexpr std::vector< std::string > S::* pointer = &S::links;
+  template< typename Subject > struct links_field {
+    static constexpr std::vector< std::string > Subject::* const pointer = &Subject::links;
   };
   static field_setter< std::vector< std::string >, links_field > const links;
 
-  template< typename S > struct linkage_field {
-    static constexpr std::string S::* pointer = &S::linkage;
+  template< typename Subject > struct linkage_field {
+    static constexpr std::string Subject::* const pointer = &Subject::linkage;
   };
   static field_setter< std::string, linkage_field > const linkage;
 
-  template< typename S > struct modules_field {
-    static constexpr std::vector< meka::module_type > S::* pointer = &S::modules;
+  template< typename Subject > struct modules_field {
+    static constexpr std::vector< meka::module_type > Subject::* const pointer = &Subject::modules;
   };
   static field_setter< std::vector< meka::module_type >, modules_field > const modules;
 

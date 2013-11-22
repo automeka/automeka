@@ -10,8 +10,8 @@
 
 namespace meka {
 
-  struct package;
-  void indent(meka::package const& package);
+  struct package_type;
+  void indent(meka::package_type const& package);
 
 }
 

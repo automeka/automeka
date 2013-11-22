@@ -11,6 +11,6 @@
 
 namespace meka {
 
-  void indent(meka::package const& package) {}
+  void indent(meka::package_type const& package) {}
 
 }

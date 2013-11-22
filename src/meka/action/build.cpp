@@ -14,7 +14,7 @@
 
 namespace meka {
 
-  void build(meka::package const& package) {
+  void build(meka::package_type const& package) {
     if (!bfs::exists("build/build.ninja"))
       meka::configure(package);
 
