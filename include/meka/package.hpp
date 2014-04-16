@@ -33,21 +33,21 @@ namespace meka {
   };
 
   struct bin_type {
-    std::string                name;
-    std::vector< std::string > sources;
-    std::vector< std::string > links;
+    std::string              name;
+    std::vector<std::string> sources;
+    std::vector<std::string> links;
   };
 
   struct lib_type {
-    std::string                name;
-    std::vector< std::string > sources;
-    std::vector< std::string > links;
-    std::string                linkage = "shared";
+    std::string              name;
+    std::vector<std::string> sources;
+    std::vector<std::string> links;
+    std::string              linkage = "shared";
   };
 
   struct package_type {
-    static std::vector< meka::module_type > list;
-    static meka::module_type                root();
+    static std::vector<meka::module_type> list;
+    static meka::module_type              root();
 
     package_type() { package_type::list.emplace_back(*this); }
 
@@ -55,12 +55,13 @@ namespace meka {
     std::string name;
     std::string version;
 
-    std::vector< meka::module_type > modules;
+    std::vector<meka::module_type> modules;
 
-    std::vector< meka::bin_type > bins;
-    std::vector< meka::lib_type > libs;
+    std::vector<meka::bin_type> bins;
+    std::vector<meka::lib_type> libs;
   };
-  typedef meka::manipulable< package_type > package;
+
+  typedef meka::manipulable<package_type> package;
 
 }
 

@@ -24,10 +24,10 @@ namespace meka {
   // { "meka.prefix","Change installation prefix", cfg::long_name = "prefix", cfg::default_ = "/usr/local" }
   // }
   // };
-  std::vector< meka::module_type > package_type::list;
+  std::vector<meka::module_type> package_type::list;
 
-  void main(std::string const& program, std::vector< std::string > const& arguments) {
-    cfg::init(program, arguments.empty() ? std::vector< std::string > { "build" } : arguments);
+  void main(std::string const& program, std::vector<std::string> const& arguments) {
+    cfg::init(program, arguments.empty() ? std::vector<std::string> { "build" } : arguments);
 
     std::string const command = cfg::get("program.arguments.#0");
 
@@ -50,7 +50,7 @@ namespace meka {
 extern "C" int main(int argc, char const* argv[]) {
   std::string const program = argv[0];
 
-  std::vector< std::string > const arguments(argv + 1, argv + argc);
+  std::vector<std::string> const arguments(argv + 1, argv + argc);
 
   meka::main(program, arguments);
 

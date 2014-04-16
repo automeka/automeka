@@ -9,30 +9,20 @@
 #define __MEKA_PATH_HPP__
 
 #include <boost/filesystem.hpp>
+#include <boost/range/algorithm/mismatch.hpp>
 
 namespace meka {
   namespace bfs = ::boost::filesystem;
 
   static inline bfs::path relative_path(bfs::path const& from, bfs::path const& to) {
-    bfs::path::iterator ifrom = from.begin();
-    bfs::path::iterator ito   = to.begin();
+    auto const& pair = boost::mismatch(from, to);
 
-    if (*ifrom != *ito)
+    if (pair.first == std::begin(from))
       return to;
 
-    while ((ifrom != from.end()) && (ito != to.end()) && (*ifrom == *ito)) {
-      ++ifrom;
-      ++ito;
-    }
-
-    bfs::path rel;
-    for (; ifrom != from.end(); ++ifrom) {
-      rel /= "..";
-    }
-
-    for (; ito != to.end(); ++ito) {
-      rel /= *ito;
-    }
+    auto rel = bfs::path {};
+    std::for_each(pair.first, from.end(), [&](bfs::path const& i) { rel /= ".."; });
+    std::for_each(pair.second, to.end(), [&](bfs::path const& i) { rel /= i; });
 
     return rel;
   }

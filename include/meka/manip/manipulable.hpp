@@ -10,17 +10,17 @@
 
 namespace meka {
 
-  template< typename Subject >
+  template<typename Subject>
   struct manipulable : Subject {
-    typedef std::function< void (Subject&) > manipulator;
-    typedef std::vector< manipulator >       manipulators;
+    typedef std::function<void (Subject&)> manipulator;
+    typedef std::vector<manipulator>       manipulators;
 
-    template< typename ... Ts >
+    template<typename ... Ts>
     manipulable(Ts&& ... ts) {
-      for (auto const& manipulate : manipulators { std::forward< Ts >(ts) ... }) {
+      for (auto const& manipulate : manipulators { std::forward<Ts>(ts) ... })
         manipulate(*this);
-      }
     }
+
   };
 
 }

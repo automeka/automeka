@@ -7,7 +7,7 @@
 
 namespace meka {
 
-  std::vector< meka::module_type > package_type::list;
+  std::vector<meka::module_type> package_type::list;
 
   extern "C" int main(int argc, char const* argv[]) {
     meka::configure(meka::package::root());
@@ -37,8 +37,9 @@ namespace meka {
     path    = meka::this_dir() / "lib/libcorefungi",
     name    = "libcorefungi",
     version = "0.0.1",
-//    require = { { "yaml-cpp", version >= "1.5.0" && version < "2.0.0", scope = "build" },
-//                { "boost-program-options", version == "1.54", scope = "build" }, }
+
+    // require = { { "yaml-cpp", version >= "1.5.0" && version < "2.0.0", scope = "build" },
+    // { "boost-program-options", version == "1.54", scope = "build" }, }
 
     modules = { meka::yamlcpp },
 

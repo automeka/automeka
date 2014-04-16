@@ -36,8 +36,8 @@ ln    = ln -fs
 tar   = tar
 wget  = wget
 incdirs  = -Iinclude -Isrc
-cflags   = -std=c11 -fpic -Qunused-arguments -g -O0
-cxxflags = -std=c++11 -fpic -Qunused-arguments -g -O0
+cflags   = -std=c11 -fpic -g -O0
+cxxflags = -std=c++11 -fpic -g -O0
 ldflags  = -L$builddir/lib -Wl,-rpath,$builddir/lib -L/usr/local/lib
 
 libpfx = lib

@@ -6,6 +6,7 @@
  */
 
 #include "meka/graph.hpp"
+#include "meka/utility.hpp"
 
 #include <boost/config.hpp> // put this first to suppress some VC++ warnings
 
@@ -23,14 +24,6 @@
 
 using namespace std;
 using namespace boost;
-
-namespace std {
-  template< typename Iterator >
-  static inline Iterator begin(std::pair< Iterator, Iterator > const& iterators) { return iterators.first; }
-
-  template< typename Iterator >
-  static inline Iterator end(std::pair< Iterator, Iterator > const& iterators) { return iterators.second; }
-}
 
 namespace meka {
 
