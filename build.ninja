@@ -1,28 +1,52 @@
-include meka.ninja
+ninja_required_version = 1.3
+builddir = build
 
-cflags = $cflags -DMEKA_BOOTSTRAP_MEKA
-cxxflags = $cxxflags -DMEKA_BOOTSTRAP_MEKA
+cblk = [30m
+cred = [31m
+cgrn = [32m
+cylw = [33m
+cblu = [34m
+cprp = [35m
+ccyn = [36m
+cwht = [37m
+crgb = [38m
+cdef = [39m
+crst = [0m
 
-build $builddir/obj/src/meka/action/indent$objext:    cxx src/meka/action/indent.cpp
-build $builddir/obj/src/meka/action/test$objext:      cxx src/meka/action/test.cpp
-build $builddir/obj/src/meka/action/install$objext:   cxx src/meka/action/install.cpp
-build $builddir/obj/src/meka/action/configure$objext: cxx src/meka/action/configure.cpp
-build $builddir/obj/src/meka/action/build$objext:     cxx src/meka/action/build.cpp
-build $builddir/obj/src/meka/action/pack$objext:      cxx src/meka/action/pack.cpp
-build $builddir/obj/src/meka/package$objext:          cxx src/meka/package.cpp
-build $builddir/obj/meka$objext:                      cxx meka
-build $builddir/meka$exeext: exe $builddir/obj/meka$objext $
-                                 $builddir/obj/src/meka/package$objext $
-                                 $builddir/obj/src/meka/action/pack$objext $
-                                 $builddir/obj/src/meka/action/configure$objext $
-                                 $builddir/obj/src/meka/action/build$objext $
-                                 $builddir/obj/src/meka/action/test$objext $
-                                 $builddir/obj/src/meka/action/indent$objext $
-                                 $builddir/obj/src/meka/action/install$objext
-  libs = -lboost_filesystem -lboost_system -lboost_regex
+cbblk = ${cblk}[1m
+cbred = ${cred}[1m
+cbgrn = ${cgrn}[1m
+cbylw = ${cylw}[1m
+cbblu = ${cblu}[1m
+cbprp = ${cprp}[1m
+cbcyn = ${ccyn}[1m
+cbwht = ${cwht}[1m
+cbrgb = ${crgb}[1m
+cbdef = ${cdef}[1m
+cbrst = ${crst}[1m
 
-build $builddir/meka-master/meka: download
-  name = berenm/meka
-  version = master
+cxx      = clang++-3.6
+ar       = ar
+cxxflags = -std=c++1y -fpic -g -O0
 
-default $builddir/meka$exeext
+rule cxx
+  command = $cxx -MMD -MT $out -MF $out.d $cxxflags $incdirs -xc++ -c $in -o $out
+  description = ${cylw}CXX${crst} ${cgrn}$out${crst}
+  depfile = $out.d
+  deps = gcc
+
+rule arc
+  command = rm -f $out && $ar crs $out $in
+  description = ${cylw}AR${crst}  ${cblu}$out${crst}
+
+rule exe
+  command = $cxx -o $out $in -Wl,--start-group $libs -Wl,--end-group
+  description = ${cylw}EXE${crst} ${cblu}$out${crst}
+
+build build/obj/meka/src/automeka.o: cxx src/automeka.cpp
+  incdirs = -Isrc -Ilib/boost_filesystem/doc/include -Ilib/boost_filesystem/include -Ilib/boost_system/include -Iinclude
+
+build build/bin/meka/automeka: exe build/obj/meka/src/automeka.o
+  libs = -lboost_filesystem -lboost_system
+
+default build/bin/meka/automeka

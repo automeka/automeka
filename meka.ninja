@@ -26,8 +26,8 @@ cbdef = ${cdef}[1m
 cbrst = ${crst}[1m
 
 ninja = $${NINJA:-ninja}
-cxx   = $${CXX:-clang++}
-cc    = $${CXX:-clang}
+cxx   = clang++-3.6
+cc    = clang-3.6
 ar    = ar
 cp    = cp -fr
 cpl   = cp -fd
@@ -37,7 +37,7 @@ tar   = tar
 wget  = wget
 incdirs  = -Iinclude -Isrc
 cflags   = -std=c11 -fpic -g -O0
-cxxflags = -std=c++11 -fpic -g -O0
+cxxflags = -std=c++1y -fpic -g -O0
 ldflags  = -L$builddir/lib -Wl,-rpath,$builddir/lib -L/usr/local/lib
 
 libpfx = lib
@@ -72,7 +72,7 @@ rule lib
   description = ${cylw}LIB${crst} ${cblu}$out${crst}
 
 rule exe
-  command = $cxx -o $out $in $ldflags $libs
+  command = $cxx -o $out $in $ldflags -Wl,--start-group $libs -Wl,--end-group
   description = ${cylw}EXE${crst} ${cblu}$out${crst}
 
 rule ln
@@ -99,9 +99,9 @@ rule packg
   command = $tar cf $out -C $folder $source
   description = ${cylw}PKG${crst} ${ccyn}$out${crst}
 
-rule configure
-  command = $builddir/meka$exeext configure
-  description = ${cylw}GEN${crst} ${ccyn}build.ninja${crst}
-  generator = 1
+# rule configure
+#   command = $builddir/meka$exeext configure
+#   description = ${cylw}GEN${crst} ${ccyn}build.ninja${crst}
+#   generator = 1
 
-build $builddir/build.ninja: configure | $builddir/meka$exeext
+# build $builddir/build.ninja: configure | $builddir/meka$exeext
