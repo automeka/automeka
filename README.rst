@@ -1,10 +1,17 @@
 ===============================================
-Meka: C++11 meta make prototype.
+Automeka: C++14 automated make prototype.
 ===============================================
-.. image:: https://secure.travis-ci.org/berenm/meka.png?branch=master
+.. image:: http://img.shields.io/travis/berenm/meka/automeka.svg?style=flat-square
     :alt: Build Status
     :target: https://travis-ci.org/berenm/meka
 
+.. image:: http://img.shields.io/github/issues/berenm/meka.svg?style=flat-square
+    :alt: Github Issues
+    :target: https://github.com/berenm/meka/issues
+
+.. image:: http://img.shields.io/github/release/berenm/meka.svg?style=flat-square
+    :alt: Github Release
+    :target: https://github.com/berenm/meka/releases
 
 USAGE
 ````````````````````````````
