@@ -26,7 +26,6 @@ cbdef = ${cdef}[1m
 cbrst = ${crst}[1m
 
 cxx      = clang++-3.6
-ar       = ar
 cxxflags = -std=c++1y -fpic -g -O0
 
 rule cxx
@@ -35,18 +34,14 @@ rule cxx
   depfile = $out.d
   deps = gcc
 
-rule arc
-  command = rm -f $out && $ar crs $out $in
-  description = ${cylw}AR${crst}  ${cblu}$out${crst}
-
 rule exe
   command = $cxx -o $out $in -Wl,--start-group $libs -Wl,--end-group
   description = ${cylw}EXE${crst} ${cblu}$out${crst}
 
-build build/obj/meka/src/automeka.o: cxx src/automeka.cpp
-  incdirs = -Isrc -Ilib/boost_filesystem/doc/include -Ilib/boost_filesystem/include -Ilib/boost_system/include -Iinclude
+build $builddir/obj/meka/src/automeka.o: cxx src/automeka.cpp
+  incdirs = -Iinclude -Isrc
 
-build build/bin/meka/automeka: exe build/obj/meka/src/automeka.o
-  libs = -lboost_filesystem -lboost_system
+build $builddir/automeka: exe build/obj/meka/src/automeka.o
+  libs = -lboost_filesystem -lboost_system -lboost_regex
 
-default build/bin/meka/automeka
+default build/automeka
