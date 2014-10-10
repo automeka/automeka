@@ -1,9 +1,6 @@
-[submodule "lib/libcorefungi"]
-	path = lib/libcorefungi
-	url = http://github.com/berenm/libcorefungi.git
 [submodule "bin/ninja"]
 	path = bin/ninja
-	url = git@github.com:berenm/ninja.git
+	url = https://github.com/berenm/ninja
 [submodule "lib/boost_algorithm"]
 	path = lib/boost_algorithm
 	url = https://github.com/boostorg/algorithm
