@@ -162,7 +162,8 @@ rule exe
 
       auto const path = *it;
       auto const ext  = fs::extension(path);
-      if (std::find(std::begin(extension::cpp), std::end(extension::cpp), ext) == std::end(extension::cpp))
+      if (std::find(std::begin(extension::cpp), std::end(extension::cpp), ext) == std::end(extension::cpp) &&
+          std::find(std::begin(extension::c), std::end(extension::c), ext) == std::end(extension::c))
         continue;
 
       if (boost::algorithm::ends_with(fs::filename(path), suffix::test + ext))
@@ -268,7 +269,10 @@ rule exe
 
         for (auto const& p : projects) {
           for (auto const& s : p.sources) {
-            out << "build " << fs::change_extension(objdir / p.name / s, extension::obj).string() << ": cxx " << (p.path / s).string() << "\n";
+            if (std::find(std::begin(extension::c), std::end(extension::c), fs::extension(s)) == std::end(extension::c))
+              out << "build " << fs::change_extension(objdir / p.name / s, extension::obj).string() << ": cxx " << (p.path / s).string() << "\n";
+            else
+              out << "build " << fs::change_extension(objdir / p.name / s, extension::obj).string() << ": cc " << (p.path / s).string() << "\n";
             out << "  incdirs = -I" << (p.path / folder::src).string() << " " << boost::algorithm::join(incdirs, " ") << "\n";
             out << "\n";
           }
