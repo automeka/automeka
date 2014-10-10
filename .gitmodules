@@ -59,7 +59,7 @@
 	branch = develop
 [submodule "lib/boost_mpl"]
 	path = lib/boost_mpl
-	url = https://github.com/ldionne/mpl11
+	url = https://github.com/berenm/boost_mpl
 	branch = develop
 [submodule "lib/boost_predef"]
 	path = lib/boost_predef
