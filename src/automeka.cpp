@@ -333,7 +333,7 @@ rule exe
         for (auto const& p : projects) {
           for (auto const& o : p.binaries) {
             out << "build " << (bindir / p.name / fs::basename(o)).string() << ": exe " << o.string() << " | " << boost::algorithm::join(archives, " $\n    ") << "\n";
-            out << "  libs = -lboost_filesystem -lboost_system " << boost::algorithm::join(archives, " ") << "\n";
+            out << "  libs = " << boost::algorithm::join(archives, " ") << "\n";
             out << "\n";
           }
         }

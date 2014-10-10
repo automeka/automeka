@@ -3,7 +3,7 @@
 	url = http://github.com/berenm/libcorefungi.git
 [submodule "bin/ninja"]
 	path = bin/ninja
-	url = git://github.com/martine/ninja.git
+	url = git@github.com:berenm/ninja.git
 [submodule "lib/boost_algorithm"]
 	path = lib/boost_algorithm
 	url = https://github.com/boostorg/algorithm
