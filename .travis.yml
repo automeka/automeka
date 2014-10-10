@@ -3,6 +3,7 @@ script:
   - git submodule update --init --recursive
   - cd bin/ninja; ./bootstrap.py; cd ../..
   - ./bin/ninja/ninja
+  - ./build/automeka
   - ./build/bin/meka/automeka
 compiler:
   - clang
@@ -13,5 +14,5 @@ before_install:
   - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
   - sudo apt-get -qq update; sudo apt-get -qq install aptitude; sudo aptitude -yq2 update
   - sudo aptitude -yq2 full-upgrade -t utopic python-dev
-  - sudo aptitude -yq2 install -t utopic clang-3.6 g++-4.9
+  - sudo aptitude -yq2 install -t utopic clang-3.6 g++-4.9 ninja-build
 cache: apt
