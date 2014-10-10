@@ -13,6 +13,10 @@ Automeka: C++14 automated make prototype.
     :alt: Github Release
     :target: https://github.com/berenm/meka/releases
 
+.. image:: http://img.shields.io/badge/gitter-join%20chat%20%E2%86%92-brightgreen.svg?style=flat-square
+    :alt: Gitter Chat
+    :target: https://gitter.im/berenm/meka
+
 USAGE
 ````````````````````````````
 Automeka automatically finds and builds your projects without any configuration. Automeka assumes
