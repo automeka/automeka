@@ -38,7 +38,7 @@
 	branch = develop
 [submodule "lib/boost_filesystem"]
 	path = lib/boost_filesystem
-	url = https://github.com/boostorg/filesystem
+	url = https://github.com/berenm/boost_filesystem
 	branch = develop
 [submodule "lib/boost_function"]
 	path = lib/boost_function
@@ -62,7 +62,7 @@
 	branch = develop
 [submodule "lib/boost_mpl"]
 	path = lib/boost_mpl
-	url = https://github.com/boostorg/mpl
+	url = https://github.com/ldionne/mpl11
 	branch = develop
 [submodule "lib/boost_predef"]
 	path = lib/boost_predef
