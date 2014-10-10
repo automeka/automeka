@@ -4,3 +4,99 @@
 [submodule "bin/ninja"]
 	path = bin/ninja
 	url = git://github.com/martine/ninja.git
+[submodule "lib/boost_algorithm"]
+	path = lib/boost_algorithm
+	url = https://github.com/boostorg/algorithm
+	branch = develop
+[submodule "lib/boost_assert"]
+	path = lib/boost_assert
+	url = https://github.com/boostorg/assert
+	branch = develop
+[submodule "lib/boost_bind"]
+	path = lib/boost_bind
+	url = https://github.com/boostorg/bind
+	branch = develop
+[submodule "lib/boost_concept_check"]
+	path = lib/boost_concept_check
+	url = https://github.com/boostorg/concept_check
+	branch = develop
+[submodule "lib/boost_config"]
+	path = lib/boost_config
+	url = https://github.com/boostorg/config
+	branch = develop
+[submodule "lib/boost_core"]
+	path = lib/boost_core
+	url = https://github.com/boostorg/core
+	branch = develop
+[submodule "lib/boost_detail"]
+	path = lib/boost_detail
+	url = https://github.com/boostorg/detail
+	branch = develop
+[submodule "lib/boost_exception"]
+	path = lib/boost_exception
+	url = https://github.com/boostorg/exception
+	branch = develop
+[submodule "lib/boost_filesystem"]
+	path = lib/boost_filesystem
+	url = https://github.com/boostorg/filesystem
+	branch = develop
+[submodule "lib/boost_function"]
+	path = lib/boost_function
+	url = https://github.com/boostorg/function
+	branch = develop
+[submodule "lib/boost_functional"]
+	path = lib/boost_functional
+	url = https://github.com/boostorg/functional
+	branch = develop
+[submodule "lib/boost_integer"]
+	path = lib/boost_integer
+	url = https://github.com/boostorg/integer
+	branch = develop
+[submodule "lib/boost_io"]
+	path = lib/boost_io
+	url = https://github.com/boostorg/io
+	branch = develop
+[submodule "lib/boost_iterator"]
+	path = lib/boost_iterator
+	url = https://github.com/boostorg/iterator
+	branch = develop
+[submodule "lib/boost_mpl"]
+	path = lib/boost_mpl
+	url = https://github.com/boostorg/mpl
+	branch = develop
+[submodule "lib/boost_predef"]
+	path = lib/boost_predef
+	url = https://github.com/boostorg/predef
+	branch = develop
+[submodule "lib/boost_preprocessor"]
+	path = lib/boost_preprocessor
+	url = https://github.com/boostorg/preprocessor
+	branch = develop
+[submodule "lib/boost_range"]
+	path = lib/boost_range
+	url = https://github.com/boostorg/range
+	branch = develop
+[submodule "lib/boost_smart_ptr"]
+	path = lib/boost_smart_ptr
+	url = https://github.com/boostorg/smart_ptr
+	branch = develop
+[submodule "lib/boost_static_assert"]
+	path = lib/boost_static_assert
+	url = https://github.com/boostorg/static_assert
+	branch = develop
+[submodule "lib/boost_system"]
+	path = lib/boost_system
+	url = https://github.com/boostorg/system
+	branch = develop
+[submodule "lib/boost_throw_exception"]
+	path = lib/boost_throw_exception
+	url = https://github.com/boostorg/throw_exception
+	branch = develop
+[submodule "lib/boost_type_traits"]
+	path = lib/boost_type_traits
+	url = https://github.com/boostorg/type_traits
+	branch = develop
+[submodule "lib/boost_utility"]
+	path = lib/boost_utility
+	url = https://github.com/boostorg/utility
+	branch = develop

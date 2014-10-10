@@ -27,6 +27,7 @@ cbrst = ${crst}[1m
 
 cxx      = clang++-3.6
 cxxflags = -std=c++1y -fpic -g -O0
+incdirs = -Ilib/boost_algorithm/include -Ilib/boost_bind/include -Ilib/boost_concept_check/include -Ilib/boost_config/include -Ilib/boost_detail/include -Ilib/boost_exception/include -Ilib/boost_filesystem/include -Ilib/boost_function/include -Ilib/boost_functional/include -Ilib/boost_integer/include -Ilib/boost_io/include -Ilib/boost_iterator/include -Ilib/boost_mpl/include -Ilib/boost_preprocessor/include -Ilib/boost_range/include -Ilib/boost_regex/include -Ilib/boost_smart_ptr/include -Ilib/boost_static_assert/include -Ilib/boost_system/include -Ilib/boost_type_traits/include -Ilib/boost_utility/include -Ilib/boost_predef/include -Ilib/boost_core/include -Ilib/boost_throw_exception/include -Ilib/boost_assert/include -Iinclude -Isrc
 
 rule cxx
   command = $cxx -MMD -MT $out -MF $out.d $cxxflags $incdirs -xc++ -c $in -o $out
@@ -39,9 +40,26 @@ rule exe
   description = ${cylw}EXE${crst} ${cblu}$out${crst}
 
 build $builddir/obj/meka/src/automeka.o: cxx src/automeka.cpp
-  incdirs = -Iinclude -Isrc
 
-build $builddir/automeka: exe build/obj/meka/src/automeka.o
-  libs = -lboost_filesystem -lboost_system -lboost_regex
+build $builddir/obj/boost_filesystem/src/codecvt_error_category.o: cxx lib/boost_filesystem/src/codecvt_error_category.cpp
+build $builddir/obj/boost_filesystem/src/operations.o: cxx lib/boost_filesystem/src/operations.cpp
+build $builddir/obj/boost_filesystem/src/path.o: cxx lib/boost_filesystem/src/path.cpp
+build $builddir/obj/boost_filesystem/src/path_traits.o: cxx lib/boost_filesystem/src/path_traits.cpp
+build $builddir/obj/boost_filesystem/src/portability.o: cxx lib/boost_filesystem/src/portability.cpp
+build $builddir/obj/boost_filesystem/src/unique_path.o: cxx lib/boost_filesystem/src/unique_path.cpp
+build $builddir/obj/boost_filesystem/src/utf8_codecvt_facet.o: cxx lib/boost_filesystem/src/utf8_codecvt_facet.cpp
+build $builddir/obj/boost_filesystem/src/windows_file_codecvt.o: cxx lib/boost_filesystem/src/windows_file_codecvt.cpp
+build $builddir/obj/boost_system/src/error_code.o: cxx lib/boost_system/src/error_code.cpp
 
-default build/automeka
+build $builddir/automeka: exe $builddir/obj/meka/src/automeka.o $
+  $builddir/obj/boost_filesystem/src/codecvt_error_category.o $
+  $builddir/obj/boost_filesystem/src/operations.o $
+  $builddir/obj/boost_filesystem/src/path.o $
+  $builddir/obj/boost_filesystem/src/path_traits.o $
+  $builddir/obj/boost_filesystem/src/portability.o $
+  $builddir/obj/boost_filesystem/src/unique_path.o $
+  $builddir/obj/boost_filesystem/src/utf8_codecvt_facet.o $
+  $builddir/obj/boost_filesystem/src/windows_file_codecvt.o $
+  $builddir/obj/boost_system/src/error_code.o
+
+default $builddir/automeka
