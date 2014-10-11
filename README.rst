@@ -13,6 +13,10 @@ Automeka: C++14 automated make prototype.
     :alt: Github Release
     :target: https://github.com/berenm/meka/releases
 
+.. image:: http://img.shields.io/badge/license-BSL%201.0-brightgreen.svg?style=flat-square
+    :alt: BSL 1.0 License
+    :target: http://www.boost.org/LICENSE_1_0.txt
+
 .. image:: http://img.shields.io/badge/gitter-join%20chat%20%E2%86%92-brightgreen.svg?style=flat-square
     :alt: Gitter Chat
     :target: https://gitter.im/berenm/meka
