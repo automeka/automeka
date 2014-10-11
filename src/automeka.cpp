@@ -144,6 +144,10 @@ rule exe
   }
 
   struct project {
+    project() = default;
+    project(std::string name, fs::path path, std::vector<fs::path> sources, std::vector<fs::path> tests)
+      : name(std::move(name)), path(std::move(path)), sources(std::move(sources)), tests(std::move(tests)) {}
+
     std::string           name;
     fs::path              path;
     std::vector<fs::path> sources;
@@ -155,6 +159,9 @@ rule exe
 
   auto const find_sources = [](fs::path root) {
     auto sources = std::vector<fs::path> {};
+
+    if (!fs::exists(root / folder::src))
+      return std::move(sources);
 
     for (auto it = fs::recursive_directory_iterator{root / folder::src}, end = fs::recursive_directory_iterator {}; it != end; ++it) {
       if (!fs::is_file(it))
@@ -178,19 +185,21 @@ rule exe
   auto const find_tests = [](fs::path root) {
     auto tests = std::vector<fs::path> {};
 
-    for (auto it = fs::recursive_directory_iterator{root / folder::src}, end = fs::recursive_directory_iterator {}; it != end; ++it) {
-      if (!fs::is_file(it))
-        continue;
+    if (fs::exists(root / folder::src)) {
+      for (auto it = fs::recursive_directory_iterator{root / folder::src}, end = fs::recursive_directory_iterator {}; it != end; ++it) {
+        if (!fs::is_file(it))
+          continue;
 
-      auto const path = *it;
-      auto const ext  = fs::extension(path);
-      if (std::find(std::begin(extension::cpp), std::end(extension::cpp), ext) == std::end(extension::cpp))
-        continue;
+        auto const path = *it;
+        auto const ext  = fs::extension(path);
+        if (std::find(std::begin(extension::cpp), std::end(extension::cpp), ext) == std::end(extension::cpp))
+          continue;
 
-      if (!boost::algorithm::ends_with(fs::filename(path), suffix::test + ext))
-        continue;
+        if (!boost::algorithm::ends_with(fs::filename(path), suffix::test + ext))
+          continue;
 
-      tests.emplace_back(fs::relative(root, *it));
+        tests.emplace_back(fs::relative(root, *it));
+      }
     }
 
     if (!fs::exists(root / folder::test))
@@ -225,7 +234,10 @@ rule exe
         continue;
       }
 
-      if (base != folder::src)
+      if (base == folder::include && fs::exists(*it / ".." / folder::src))
+        continue;
+
+      if (base != folder::src && base != folder::include)
         continue;
 
       it.no_push();
@@ -239,7 +251,7 @@ rule exe
       }
       names.insert(name);
 
-      projects.push_back({ name, relp, find_sources(path), find_tests(path) });
+      projects.emplace_back(name, relp, find_sources(path), find_tests(path));
     }
 
     return std::move(projects);
