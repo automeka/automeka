@@ -5,15 +5,11 @@ Automeka: C++14 automated make prototype.
     :alt: Build Status
     :target: https://travis-ci.org/berenm/meka
 
-.. image:: http://img.shields.io/github/issues/berenm/meka.svg?style=flat-square
-    :alt: Github Issues
-    :target: https://github.com/berenm/meka/issues
-
-.. image:: http://img.shields.io/github/release/berenm/meka.svg?style=flat-square
+.. image:: http://img.shields.io/badge/release-v0.0.1-orange.svg?style=flat-square
     :alt: Github Release
     :target: https://github.com/berenm/meka/releases
 
-.. image:: http://img.shields.io/badge/license-BSL%201.0-brightgreen.svg?style=flat-square
+.. image:: http://img.shields.io/badge/license-BSL%201.0-blue.svg?style=flat-square
     :alt: BSL 1.0 License
     :target: http://www.boost.org/LICENSE_1_0.txt
 
