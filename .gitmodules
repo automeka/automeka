@@ -1,6 +1,7 @@
 [submodule "bin/ninja"]
 	path = bin/ninja
-	url = https://github.com/berenm/ninja
+	url = https://github.com/automeka/ninja
+	branch = automeka
 [submodule "lib/boost_algorithm"]
 	path = lib/boost_algorithm
 	url = https://github.com/boostorg/algorithm
@@ -35,8 +36,8 @@
 	branch = develop
 [submodule "lib/boost_filesystem"]
 	path = lib/boost_filesystem
-	url = https://github.com/berenm/boost_filesystem
-	branch = develop
+	url = https://github.com/automeka/boost_filesystem
+	branch = automeka
 [submodule "lib/boost_function"]
 	path = lib/boost_function
 	url = https://github.com/boostorg/function
@@ -59,8 +60,8 @@
 	branch = develop
 [submodule "lib/boost_mpl"]
 	path = lib/boost_mpl
-	url = https://github.com/berenm/boost_mpl
-	branch = develop
+	url = https://github.com/automeka/boost_mpl
+	branch = automeka
 [submodule "lib/boost_predef"]
 	path = lib/boost_predef
 	url = https://github.com/boostorg/predef

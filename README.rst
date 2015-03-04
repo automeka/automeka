@@ -1,13 +1,13 @@
 ===============================================
 Automeka: C++14 automated make prototype.
 ===============================================
-.. image:: http://img.shields.io/travis/berenm/meka/automeka.svg?style=flat-square
+.. image:: http://img.shields.io/travis/automeka/automeka/automeka.svg?style=flat-square
     :alt: Build Status
-    :target: https://travis-ci.org/berenm/meka
+    :target: https://travis-ci.org/automeka/automeka
 
 .. image:: http://img.shields.io/badge/release-v0.0.1-orange.svg?style=flat-square
     :alt: Github Release
-    :target: https://github.com/berenm/meka/releases
+    :target: https://github.com/automeka/automeka/releases
 
 .. image:: http://img.shields.io/badge/license-BSL%201.0-blue.svg?style=flat-square
     :alt: BSL 1.0 License
@@ -15,7 +15,7 @@ Automeka: C++14 automated make prototype.
 
 .. image:: http://img.shields.io/badge/gitter-join%20chat%20%E2%86%92-brightgreen.svg?style=flat-square
     :alt: Gitter Chat
-    :target: https://gitter.im/berenm/meka
+    :target: https://gitter.im/automeka/automeka
 
 USAGE
 ````````````````````````````
