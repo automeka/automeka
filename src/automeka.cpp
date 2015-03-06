@@ -104,8 +104,8 @@ rule exe
       return std::move(rel);
     };
 
-    auto const is_file = [](auto it) {
-      switch (it.status().type()) {
+    auto const is_file = [](fs::path path) {
+      switch (fs::status(path).type()) {
         default:
         case fs::status_error:
         case fs::file_not_found:
@@ -123,8 +123,8 @@ rule exe
       }
     };
 
-    auto const is_directory = [](auto it) {
-      switch (it.status().type()) {
+    auto const is_directory = [](fs::path path) {
+      switch (fs::status(path).type()) {
         default:
         case fs::status_error:
         case fs::file_not_found:
@@ -164,11 +164,11 @@ rule exe
       return std::move(sources);
 
     for (auto it = fs::recursive_directory_iterator{root / folder::src}, end = fs::recursive_directory_iterator {}; it != end; ++it) {
-      if (!fs::is_file(it))
+      auto const path = *it;
+      if (!fs::is_file(path))
         continue;
 
-      auto const path = *it;
-      auto const ext  = fs::extension(path);
+      auto const ext = fs::extension(path);
       if (std::find(std::begin(extension::cpp), std::end(extension::cpp), ext) == std::end(extension::cpp) &&
           std::find(std::begin(extension::c), std::end(extension::c), ext) == std::end(extension::c))
         continue;
@@ -187,11 +187,11 @@ rule exe
 
     if (fs::exists(root / folder::src)) {
       for (auto it = fs::recursive_directory_iterator{root / folder::src}, end = fs::recursive_directory_iterator {}; it != end; ++it) {
-        if (!fs::is_file(it))
+        auto const path = *it;
+        if (!fs::is_file(path))
           continue;
 
-        auto const path = *it;
-        auto const ext  = fs::extension(path);
+        auto const ext = fs::extension(path);
         if (std::find(std::begin(extension::cpp), std::end(extension::cpp), ext) == std::end(extension::cpp))
           continue;
 
@@ -206,11 +206,11 @@ rule exe
       return std::move(tests);
 
     for (auto it = fs::recursive_directory_iterator{root / folder::test}, end = fs::recursive_directory_iterator {}; it != end; ++it) {
-      if (!fs::is_file(it))
+      auto const path = *it;
+      if (!fs::is_file(path))
         continue;
 
-      auto const path = *it;
-      auto const ext  = fs::extension(path);
+      auto const ext = fs::extension(path);
       if (std::find(std::begin(extension::cpp), std::end(extension::cpp), ext) == std::end(extension::cpp))
         continue;
 
@@ -225,7 +225,7 @@ rule exe
     auto projects = std::vector<project> {};
 
     for (auto it = fs::recursive_directory_iterator{root}, end = fs::recursive_directory_iterator {}; it != end; ++it) {
-      if (!fs::is_directory(it))
+      if (!fs::is_directory(*it))
         continue;
 
       auto const base = fs::filename(*it);
