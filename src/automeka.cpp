@@ -89,7 +89,7 @@ rule exe
   namespace fs {
     using namespace ::boost::filesystem;
 
-    auto const filename = [](fs::path path) { return std::move(path).filename().string(); };
+    auto const filename = [](fs::path path) { return std::move(path).filename().generic_string(); };
 
     auto const relative = [](fs::path from, fs::path to) {
       auto const pair = boost::mismatch(from, to);
@@ -269,7 +269,7 @@ rule exe
     auto projects = find_projects(root);
 
     {
-      auto const ninjafile = (objdir / "build.ninja").string();
+      auto const ninjafile = (objdir / "build.ninja").generic_string();
       fs::create_directories(objdir);
 
       {
@@ -277,15 +277,15 @@ rule exe
         out << mekaninja;
 
         auto incdirs = std::vector<std::string> {};
-        std::transform(std::begin(projects), std::end(projects), std::back_inserter(incdirs), [&root](auto project) { return "-I" + (project.path / folder::include).string(); });
+        std::transform(std::begin(projects), std::end(projects), std::back_inserter(incdirs), [&root](auto project) { return "-I" + (project.path / folder::include).generic_string(); });
 
         for (auto const& p : projects) {
           for (auto const& s : p.sources) {
             if (std::find(std::begin(extension::c), std::end(extension::c), fs::extension(s)) == std::end(extension::c))
-              out << "build " << fs::change_extension(objdir / p.name / s, extension::obj).string() << ": cxx " << (p.path / s).string() << "\n";
+              out << "build " << fs::change_extension(objdir / p.name / s, extension::obj).generic_string() << ": cxx " << (p.path / s).generic_string() << "\n";
             else
-              out << "build " << fs::change_extension(objdir / p.name / s, extension::obj).string() << ": cc " << (p.path / s).string() << "\n";
-            out << "  incdirs = -I" << (p.path / folder::src).string() << " " << boost::algorithm::join(incdirs, " ") << "\n";
+              out << "build " << fs::change_extension(objdir / p.name / s, extension::obj).generic_string() << ": cc " << (p.path / s).generic_string() << "\n";
+            out << "  incdirs = -I" << (p.path / folder::src).generic_string() << " " << boost::algorithm::join(incdirs, " ") << "\n";
             out << "\n";
           }
         }
@@ -299,7 +299,7 @@ rule exe
     }
 
     {
-      auto const ninjafile = (libdir / "build.ninja").string();
+      auto const ninjafile = (libdir / "build.ninja").generic_string();
       fs::create_directories(libdir);
 
       {
@@ -309,7 +309,7 @@ rule exe
         for (auto& p : projects) {
           for (auto const& s : p.sources) {
             auto const object  = fs::change_extension(objdir / p.name / s, extension::obj);
-            auto const command = "nm " + object.string() + " --defined-only | grep --quiet ' T main'";
+            auto const command = "nm " + object.generic_string() + " --defined-only | grep --quiet ' T main'";
             auto const result  = std::system(command.c_str());
 
             if (result)
@@ -319,9 +319,9 @@ rule exe
           }
 
           auto objects = std::vector<std::string> {};
-          std::transform(std::begin(p.objects), std::end(p.objects), std::back_inserter(objects), [](auto path) { return path.string(); });
+          std::transform(std::begin(p.objects), std::end(p.objects), std::back_inserter(objects), [](auto path) { return path.generic_string(); });
 
-          out << "build " << (libdir / p.name).string() << extension::arc << ": arc $\n";
+          out << "build " << (libdir / p.name).generic_string() << extension::arc << ": arc $\n";
           for (auto const& o : objects)
             out << "  " << o << " $\n";
           out << "\n";
@@ -336,7 +336,7 @@ rule exe
     }
 
     {
-      auto const ninjafile = (bindir / "build.ninja").string();
+      auto const ninjafile = (bindir / "build.ninja").generic_string();
       fs::create_directories(bindir);
 
       {
@@ -344,11 +344,11 @@ rule exe
         out << mekaninja;
 
         auto archives = std::vector<std::string> {};
-        std::transform(std::begin(projects), std::end(projects), std::back_inserter(archives), [libdir](auto project) { return (libdir / project.name).string() + extension::arc; });
+        std::transform(std::begin(projects), std::end(projects), std::back_inserter(archives), [libdir](auto project) { return (libdir / project.name).generic_string() + extension::arc; });
 
         for (auto const& p : projects) {
           for (auto const& o : p.binaries) {
-            out << "build " << (bindir / p.name / fs::basename(o)).string() << ": exe " << o.string() << " | " << boost::algorithm::join(archives, " $\n    ") << "\n";
+            out << "build " << (bindir / p.name / fs::basename(o)).generic_string() << ": exe " << o.generic_string() << " | " << boost::algorithm::join(archives, " $\n    ") << "\n";
             out << "  libs = " << boost::algorithm::join(archives, " ") << "\n";
             out << "\n";
           }
