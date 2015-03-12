@@ -1,9 +1,25 @@
+#define __STDC_LIMIT_MACROS
+#define __STDC_CONSTANT_MACROS
+
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/ValueSymbolTable.h"
+#include "llvm/Object/Archive.h"
+#include "llvm/Object/ObjectFile.h"
+#include "llvm/Object/IRObjectFile.h"
+#include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/TargetSelect.h"
+
 #include <boost/filesystem.hpp>
 #include <boost/range/algorithm/mismatch.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/uuid/sha1.hpp>
+
+#include <git2.h>
 
 #include <unordered_set>
+#include <unordered_map>
 #include <fstream>
 #include <iostream>
 
@@ -22,10 +38,17 @@ namespace meka {
     auto const h   = { ".h" };
     auto const obj = ".o";
     auto const arc = ".a";
+    auto const lib = ".so";
+    auto const exe = "";
   }
 
   namespace suffix {
     auto const test = "_test";
+  }
+
+  namespace prefix {
+    auto const arc = "lib";
+    auto const lib = "lib";
   }
 
   auto const mekaninja = R"(
@@ -56,32 +79,35 @@ cbrgb = ${crgb}[1m
 cbdef = ${cdef}[1m
 cbrst = ${crst}[1m
 
-cxx   = clang++-3.6
-cc    = clang-3.6
-ar    = ar
+cxx = clang++-3.6
+lnk = llvm-link-3.6
 
-cflags   = -std=c11 -fpic -g -O0
-cxxflags = -std=c++1y -fpic -g -O0
-ldflags  = -L$builddir/lib -Wl,-rpath,$builddir/lib -L/usr/local/lib
+cflags   = -std=c11 -fpic -g -O3 -fmodules -fautolink
+cxxflags = -std=c++1y -fpic -g -O3 -fmodules -fautolink
+ldflags  = -O3 -Wl,-O3 -Wl,--gc-sections -L$builddir/lib -Wl,-rpath,$builddir/lib
 
 rule cxx
-  command = $cxx -MMD -MT $out -MF $out.d $cxxflags $incdirs -xc++ -c $in -o $out
+  command = $cxx -MMD -MT $out -MF $out.d $cxxflags $incdirs -x c++ -c -emit-llvm -o $out $in
   description = ${cylw}CXX${crst} ${cgrn}$out${crst}
   depfile = $out.d
   deps = gcc
 
 rule cc
-  command = $cc -MMD -MT $out -MF $out.d $cflags $incdirs -xc -c $in -o $out
-  description = ${cylw}CXX${crst} ${cgrn}$out${crst}
+  command = $cxx -MMD -MT $out -MF $out.d $cflags $incdirs -x c -c -emit-llvm -o $out $in
+  description = ${cylw}CC${crst}  ${cgrn}$out${crst}
   depfile = $out.d
   deps = gcc
 
-rule arc
-  command = rm -f $out && $ar crs $out $in
-  description = ${cylw}AR${crst}  ${cblu}$out${crst}
+rule lnk
+  command = $lnk -o $out $in
+  description = ${cylw}LNK${crst} ${cblu}$out${crst}
+
+rule lib
+  command = $cxx -fPIC $ldflags -shared -x ir -o $out $in -Wl,--start-group $libs -Wl,--end-group
+  description = ${cylw}LIB${crst} ${cblu}$out${crst}
 
 rule exe
-  command = $cxx -o $out $in $ldflags -Wl,--start-group $libs -Wl,--end-group
+  command = $cxx -fPIC $ldflags -x ir -o $out $in -Wl,--start-group $libs -Wl,--end-group
   description = ${cylw}EXE${crst} ${cblu}$out${crst}
 
 )";
@@ -90,6 +116,7 @@ rule exe
     using namespace ::boost::filesystem;
 
     auto const filename = [](fs::path path) { return std::move(path).filename().generic_string(); };
+    auto const stem = [](fs::path path) { return std::move(path).stem().generic_string(); };
 
     auto const relative = [](fs::path from, fs::path to) {
       auto const pair = boost::mismatch(from, to);
@@ -140,6 +167,134 @@ rule exe
         case fs::directory_file:
           return true;
       }
+    };
+  }
+
+  namespace symbol {
+    auto const main = "main";
+
+    auto const read = [](fs::path const& path, bool defined) {
+      auto&       context         = llvm::getGlobalContext();
+      auto        buffer_or_error = llvm::MemoryBuffer::getFile(path.generic_string());
+      auto const& buffer          = *buffer_or_error.get();
+      auto        binary_or_error = llvm::object::createBinary(buffer.getMemBufferRef(), &context);
+      auto const& binary          = *binary_or_error.get();
+
+      auto const from_object = [defined](auto const& object) {
+        auto symbols = std::unordered_set<std::string> {};
+
+        for (auto& sym : object.symbols()) {
+          llvm::StringRef name;
+          if (sym.getName(name))
+            continue;
+
+          uint32_t flags = sym.getFlags();
+          if (!!(flags & llvm::object::SymbolRef::SF_Undefined) == defined)
+            continue;
+
+          llvm::object::SymbolRef::Type type;
+          if (sym.getType(type))
+            continue;
+
+          if (defined && type != llvm::object::SymbolRef::ST_Data && type != llvm::object::SymbolRef::ST_Function)
+            continue;
+
+          if (name.empty() || name[0] == '.')
+            continue;
+
+          symbols.insert(name);
+        }
+
+        return std::move(symbols);
+      };
+
+      auto const from_archive = [&](auto const& archive) {
+        auto symbols = std::unordered_set<std::string> {};
+
+        for (auto it = archive.child_begin(), end = archive.child_end(); it != end; ++it) {
+          auto        binary_or_error = it->getAsBinary(&context);
+          auto const& binary          = *binary_or_error.get();
+
+          if (auto* object = llvm::dyn_cast<llvm::object::ObjectFile>(&binary)) {
+            auto objsyms = from_object(*object);
+            std::move(std::begin(objsyms), std::end(objsyms), std::inserter(symbols, symbols.begin()));
+          }
+        }
+
+        return std::move(symbols);
+      };
+
+      if (auto* archive = llvm::dyn_cast<llvm::object::Archive>(&binary))
+        return from_archive(*archive);
+      else if (auto* object = llvm::dyn_cast<llvm::object::ObjectFile>(&binary))
+        return from_object(*object);
+      else
+        return std::unordered_set<std::string> {};
+    };
+
+    auto const find = [](fs::path const& path, std::string const& name) {
+      auto&       context         = llvm::getGlobalContext();
+      auto        buffer_or_error = llvm::MemoryBuffer::getFile(path.generic_string());
+      auto const& buffer          = *buffer_or_error.get();
+      auto        binary_or_error = llvm::object::createBinary(buffer.getMemBufferRef(), &context);
+      auto const& binary          = *binary_or_error.get();
+
+      if (auto* object = llvm::dyn_cast<llvm::object::IRObjectFile>(&binary))
+        return object->getModule().getValueSymbolTable().lookup(name) == nullptr;
+      else
+        return false;
+    };
+
+    auto const libraries = [](fs::path const& path) {
+      auto flags = std::vector<std::string> {};
+
+      auto&       context         = llvm::getGlobalContext();
+      auto        buffer_or_error = llvm::MemoryBuffer::getFile(path.generic_string());
+      auto const& buffer          = *buffer_or_error.get();
+      auto        binary_or_error = llvm::object::createBinary(buffer.getMemBufferRef(), &context);
+      auto const& binary          = *binary_or_error.get();
+
+      if (auto* object = llvm::dyn_cast<llvm::object::IRObjectFile>(&binary)) {
+        if (auto* options = llvm::cast<llvm::MDNode>(object->getModule().getModuleFlag("Linker Options"))) {
+          for (auto& operand : options->operands()) {
+            for (auto& o : llvm::cast<llvm::MDNode>(operand)->operands()) {
+              flags.push_back(llvm::cast<llvm::MDString>(o)->getString());
+            }
+          }
+        }
+      }
+
+      return flags;
+    };
+
+    auto const defined   = [](fs::path const& path) { return symbol::read(path, true); };
+    auto const undefined = [](fs::path const& path) { return symbol::read(path, false); };
+  }
+
+  namespace system {
+    auto const root = "/usr/lib/x86_64-linux-gnu";
+
+    auto const libraries = []() {
+      auto libraries = std::vector<fs::path> {};
+
+      for (auto it = fs::directory_iterator {system::root}, end = fs::directory_iterator {}; it != end; ++it) {
+        if (!fs::is_file(*it))
+          continue;
+
+        auto const path = *it;
+        if (fs::extension(path) != extension::arc)
+          continue;
+
+        if (fs::extension(fs::stem(path)) == ".dll")
+          continue;
+
+        if (!boost::algorithm::starts_with(fs::filename(path), prefix::arc))
+          continue;
+
+        libraries.emplace_back(*it);
+      }
+
+      return libraries;
     };
   }
 
@@ -257,6 +412,12 @@ rule exe
     return std::move(projects);
   };
 
+  auto const sha1 = [](fs::path file) {
+    git_oid out;
+    git_odb_hashfile(&out, file.generic_string().c_str(), GIT_OBJ_BLOB);
+    return out;
+  };
+
   extern "C" int main(int, char*[]) {
     auto const root      = fs::current_path();
     auto const ninja     = std::string { std::getenv("NINJA") ? std::getenv("NINJA") : "ninja" };
@@ -265,6 +426,26 @@ rule exe
     auto const objdir    = builddir / "obj";
     auto const libdir    = builddir / "lib";
     auto const bindir    = builddir / "bin";
+
+
+    // auto folders = { "/usr/lib/x86_64-linux-gnu", "/usr/include", "lib", "src" };
+
+    // for (auto f : folders) {
+    //   for (auto it = fs::directory_iterator{f}, end = fs::directory_iterator {}; it != end; ++it) {
+    //     auto const path = *it;
+    //     if (!fs::is_file(path))
+    //       continue;
+
+    //     if (fs::is_symlink(path))
+    //       continue;
+
+    //     std::cerr << path << std::endl;
+    //     sha1(path);
+    //   }
+    // }
+
+    // return 0;
+
 
     auto projects = find_projects(root);
 
@@ -286,6 +467,7 @@ rule exe
             else
               out << "build " << fs::change_extension(objdir / p.name / s, extension::obj).generic_string() << ": cc " << (p.path / s).generic_string() << "\n";
             out << "  incdirs = -I" << (p.path / folder::src).generic_string() << " " << boost::algorithm::join(incdirs, " ") << "\n";
+            out << "  module = " << p.name << "\n";
             out << "\n";
           }
         }
@@ -309,10 +491,8 @@ rule exe
         for (auto& p : projects) {
           for (auto const& s : p.sources) {
             auto const object  = fs::change_extension(objdir / p.name / s, extension::obj);
-            auto const command = "nm " + object.generic_string() + " --defined-only | grep --quiet ' T main'";
-            auto const result  = std::system(command.c_str());
 
-            if (result)
+            if (symbol::find(object, symbol::main))
               p.objects.emplace_back(std::move(object));
             else
               p.binaries.emplace_back(std::move(object));
@@ -321,7 +501,10 @@ rule exe
           auto objects = std::vector<std::string> {};
           std::transform(std::begin(p.objects), std::end(p.objects), std::back_inserter(objects), [](auto path) { return path.generic_string(); });
 
-          out << "build " << (libdir / p.name).generic_string() << extension::arc << ": arc $\n";
+          if (objects.empty())
+            continue;
+
+          out << "build " << (objdir / (prefix::arc + p.name)).generic_string() << extension::obj << ": lnk $\n";
           for (auto const& o : objects)
             out << "  " << o << " $\n";
           out << "\n";
@@ -343,13 +526,30 @@ rule exe
         auto && out = std::ofstream { ninjafile };
         out << mekaninja;
 
-        auto archives = std::vector<std::string> {};
-        std::transform(std::begin(projects), std::end(projects), std::back_inserter(archives), [libdir](auto project) { return (libdir / project.name).generic_string() + extension::arc; });
+        auto libraries = std::unordered_set<std::string> {};
+        for (auto& p : projects) {
+          auto object = (objdir / (prefix::arc + p.name)).generic_string() + extension::obj;
+          if (!fs::exists(object))
+            continue;
+
+          libraries.insert("-l" + p.name);
+          out << "build " << (libdir / (prefix::lib + p.name)).generic_string() << extension::lib << ": lib " << object << "\n";
+        }
 
         for (auto const& p : projects) {
           for (auto const& o : p.binaries) {
-            out << "build " << (bindir / p.name / fs::basename(o)).generic_string() << ": exe " << o.generic_string() << " | " << boost::algorithm::join(archives, " $\n    ") << "\n";
-            out << "  libs = " << boost::algorithm::join(archives, " ") << "\n";
+            auto linklibs = symbol::libraries(o);
+
+            out << "build " << (bindir / p.name / (fs::basename(o) + extension::exe)).generic_string() << ": exe " << o.generic_string() << " |";
+            for (auto l : linklibs) {
+              if (libraries.find(l) == libraries.end())
+                continue;
+
+              out << " $\n";
+              out << "  " << (libdir / (prefix::lib + l.substr(2))).generic_string() << extension::lib;
+            }
+            out << "\n";
+            out << "  libs = " << boost::algorithm::join(linklibs, " ") << "\n";
             out << "\n";
           }
         }
