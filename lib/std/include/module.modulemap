@@ -1,0 +1,736 @@
+module stdlib [system] [extern_c] {
+  textual header "stddef.h"
+  header "stdlib.h"
+  header "sys/types.h"
+  header "sys/select.h"
+  header "time.h"
+  export *
+}
+
+module std [system] {
+  // Utilities library
+  explicit module cstdlib {
+    header "cstdlib"
+    header "stdlib.h"
+    requires cplusplus
+    export *
+  }
+  explicit module csignal {
+    header "csignal"
+    header "signal.h"
+    requires cplusplus
+    export *
+  }
+  explicit module csetjmp {
+    header "csetjmp"
+    header "setjmp.h"
+    requires cplusplus
+    export *
+  }
+  explicit module cstdarg {
+    header "cstdarg"
+    header "stdarg.h"
+    requires cplusplus
+    export *
+  }
+  explicit module typeinfo {
+    header "typeinfo"
+    requires cplusplus
+    export *
+  }
+  explicit module typeindex {
+    header "typeindex"
+    requires cplusplus11
+    export *
+  }
+  explicit module type_traits {
+    header "type_traits"
+    requires cplusplus11
+    export *
+  }
+  explicit module bitset {
+    header "bitset"
+    requires cplusplus
+    export string
+    export iosfwd
+    export *
+  }
+  explicit module functional {
+    header "functional"
+    requires cplusplus
+    export *
+  }
+  explicit module utility {
+    header "utility"
+    requires cplusplus
+    export initializer_list
+    export string
+    export *
+  }
+  explicit module ctime {
+    header "ctime"
+    header "time.h"
+    requires cplusplus
+    export *
+  }
+  explicit module chrono {
+    header "chrono"
+    requires cplusplus11
+    export *
+  }
+  explicit module cstddef {
+    textual header "cstddef"
+    textual header "stddef.h"
+    requires cplusplus
+    export *
+  }
+  explicit module initializer_list {
+    header "initializer_list"
+    requires cplusplus11
+    export *
+  }
+  explicit module tuple {
+    header "tuple"
+    requires cplusplus11
+    export *
+  }
+
+  // Dynamic memory management
+  explicit module new {
+    header "new"
+    requires cplusplus
+    export *
+  }
+  explicit module memory {
+    header "memory"
+    requires cplusplus
+    export *
+  }
+  explicit module scoped_allocator {
+    header "scoped_allocator"
+    requires cplusplus11
+    export *
+  }
+
+  // Numeric limits
+  explicit module climits {
+    header "climits"
+    header "limits.h"
+    requires cplusplus
+    export *
+  }
+  explicit module cfloat {
+    header "cfloat"
+    header "float.h"
+    requires cplusplus
+    export *
+  }
+  explicit module cstdint {
+    header "cstdint"
+    header "stdint.h"
+    requires cplusplus11
+    export *
+  }
+  explicit module cinttypes {
+    header "cinttypes"
+    header "inttypes.h"
+    requires cplusplus11
+    export *
+  }
+  explicit module limits {
+    header "limits"
+    requires cplusplus
+    export *
+  }
+
+  // Error handling
+  explicit module exception {
+    header "exception"
+    requires cplusplus
+    export *
+  }
+  explicit module stdexcept {
+    header "stdexcept"
+    requires cplusplus
+    export *
+  }
+  explicit module cassert {
+    textual header "cassert"
+    textual header "assert.h"
+    requires cplusplus
+    export *
+  }
+  explicit module system_error {
+    header "system_error"
+    requires cplusplus11
+    export *
+  }
+  explicit module cerrno {
+    header "cerrno"
+    header "errno.h"
+    requires cplusplus
+    export *
+  }
+
+  // Strings library
+  explicit module cctype {
+    header "cctype"
+    header "ctype.h"
+    requires cplusplus
+    export *
+  }
+  explicit module cwctype {
+    header "cwctype"
+    header "wctype.h"
+    requires cplusplus
+    export *
+  }
+  explicit module cstring {
+    header "cstring"
+    header "string.h"
+    requires cplusplus
+    export *
+  }
+  explicit module cwchar {
+    header "cwchar"
+    header "wchar.h"
+    requires cplusplus
+    export *
+  }
+  explicit module cuchar {
+    header "cuchar"
+    requires cplusplus11
+    export *
+  }
+  explicit module string {
+    header "string"
+    requires cplusplus
+    export initializer_list
+    export *
+  }
+
+  // Containers library
+  explicit module array {
+    header "array"
+    requires cplusplus11
+    export initializer_list
+    export *
+  }
+  explicit module vector {
+    header "vector"
+    requires cplusplus
+    export initializer_list
+    export memory
+    export *
+  }
+  explicit module deque {
+    header "deque"
+    requires cplusplus
+    export initializer_list
+    export *
+  }
+  explicit module list {
+    header "list"
+    requires cplusplus
+    export initializer_list
+    export *
+  }
+  explicit module forward_list {
+    header "forward_list"
+    requires cplusplus11
+    export initializer_list
+    export *
+  }
+  explicit module set {
+    header "set"
+    requires cplusplus
+    export initializer_list
+    export memory
+    export *
+  }
+  explicit module map {
+    header "map"
+    requires cplusplus
+    export initializer_list
+    export memory
+    export set
+    export *
+  }
+  explicit module unordered_set {
+    header "unordered_set"
+    requires cplusplus11
+    export initializer_list
+    export *
+  }
+  explicit module unordered_map {
+    header "unordered_map"
+    requires cplusplus11
+    export initializer_list
+    export unordered_set
+    export *
+  }
+  explicit module stack {
+    header "stack"
+    requires cplusplus
+    export initializer_list
+    export *
+  }
+  explicit module queue {
+    header "queue"
+    requires cplusplus
+    export initializer_list
+    export *
+  }
+
+  // Algorithms library
+  explicit module algorithm {
+    header "algorithm"
+    requires cplusplus
+    export initializer_list
+    export *
+  }
+
+  // Iterators library
+  explicit module iterator {
+    header "iterator"
+    requires cplusplus
+    export *
+  }
+
+  // Numerics library
+  explicit module cmath {
+    header "cmath"
+    header "math.h"
+    requires cplusplus
+    export *
+  }
+  explicit module complex {
+    header "complex"
+    requires cplusplus
+    export *
+  }
+  explicit module valarray {
+    header "valarray"
+    requires cplusplus
+    export initializer_list
+    export *
+  }
+  explicit module random {
+    header "random"
+    requires cplusplus11
+    export initializer_list
+    export *
+  }
+  explicit module numeric {
+    header "numeric"
+    requires cplusplus
+    export *
+  }
+  explicit module ratio {
+    header "ratio"
+    requires cplusplus11
+    export *
+  }
+  explicit module cfenv {
+    header "cfenv"
+    header "fenv.h"
+    requires cplusplus11
+    export *
+  }
+
+  // Localization library
+  explicit module codecvt {
+    header "codecvt"
+    requires cplusplus11
+    export *
+  }
+  explicit module locale {
+    header "locale"
+    requires cplusplus
+    export *
+  }
+  explicit module clocale {
+    header "clocale"
+    header "locale.h"
+    requires cplusplus
+    export *
+  }
+
+  // Input/output library
+  explicit module iosfwd {
+    header "iosfwd"
+    requires cplusplus
+    export *
+  }
+  explicit module ios {
+    header "ios"
+    requires cplusplus
+    export iosfwd
+    export *
+  }
+  explicit module istream {
+    header "istream"
+    requires cplusplus
+    export *
+  }
+  explicit module ostream {
+    header "ostream"
+    requires cplusplus
+    export *
+  }
+  explicit module iostream {
+    header "iostream"
+    requires cplusplus
+    export ios
+    export streambuf
+    export istream
+    export ostream
+    export *
+  }
+  explicit module fstream {
+    header "fstream"
+    requires cplusplus
+    export *
+  }
+  explicit module sstream {
+    header "sstream"
+    requires cplusplus
+    export *
+  }
+  explicit module iomanip {
+    header "iomanip"
+    requires cplusplus
+    export *
+  }
+  explicit module streambuf {
+    header "streambuf"
+    requires cplusplus
+    export *
+  }
+  explicit module cstdio {
+    header "cstdio"
+    header "stdio.h"
+    requires cplusplus
+    export *
+  }
+
+  // Regular Expressions library
+  explicit module regex {
+    header "regex"
+    requires cplusplus11
+    export initializer_list
+    export *
+  }
+
+  // Atomic Operations library
+  explicit module atomic {
+    header "atomic"
+    requires cplusplus11
+    export *
+  }
+
+  // Thread support library
+  explicit module thread {
+    header "thread"
+    requires cplusplus11
+    export *
+  }
+  explicit module mutex {
+    header "mutex"
+    requires cplusplus11
+    export *
+  }
+  explicit module shared_mutex {
+    header "shared_mutex"
+    requires cplusplus14
+    export *
+  }
+  explicit module future {
+    header "future"
+    requires cplusplus11
+    export *
+  }
+  explicit module condition_variable {
+    header "condition_variable"
+    requires cplusplus11
+    export *
+  }
+
+  // C compatibility headers
+  explicit module ciso646 {
+    header "ciso646"
+    header "iso646.h"
+    requires cplusplus
+    export *
+  }
+  explicit module ccomplex {
+    header "ccomplex"
+    header "complex.h"
+    requires cplusplus11
+    export complex
+    export *
+  }
+  explicit module ctgmath {
+    header "ctgmath"
+    header "tgmath.h"
+    requires cplusplus11
+    export ccomplex
+    export cmath
+    export *
+  }
+  explicit module cstdalign {
+    header "cstdalign"
+    requires cplusplus11
+    export *
+  }
+  explicit module cstdbool {
+    header "cstdbool"
+    header "stdbool.h"
+    requires cplusplus11
+    export *
+  }
+
+  explicit module c [extern_c] {
+    explicit module aio {
+      header "aio.h"
+      export *
+    }
+    explicit module arpa {
+      explicit module inet {
+        header "arpa/inet.h"
+        export *
+      }
+    }
+    explicit module cpio {
+      header "cpio.h"
+      export *
+    }
+    explicit module dirent {
+      header "dirent.h"
+      export *
+    }
+    explicit module dlfcn {
+      header "dlfcn.h"
+      export *
+      link "dl"
+    }
+    explicit module fcntl {
+      header "fcntl.h"
+      export *
+    }
+    explicit module fmtmsg {
+      header "fmtmsg.h"
+      export *
+    }
+    explicit module fnmatch {
+      header "fnmatch.h"
+      export *
+    }
+    explicit module ftw {
+      header "ftw.h"
+      export *
+    }
+    explicit module glob {
+      header "glob.h"
+      export *
+    }
+    explicit module grp {
+      header "grp.h"
+      export *
+    }
+    explicit module iconv {
+      header "iconv.h"
+      export *
+    }
+    explicit module langinfo {
+      header "langinfo.h"
+      export *
+    }
+    explicit module libgen {
+      header "libgen.h"
+      export *
+    }
+    explicit module monetary {
+      header "monetary.h"
+      export *
+    }
+    explicit module mqueue {
+      header "mqueue.h"
+      export *
+    }
+    explicit module ndbm {
+      header "ndbm.h"
+      export *
+    }
+    explicit module net {
+      explicit module if {
+        header "net/if.h"
+        export *
+      }
+    }
+    explicit module netdb {
+      header "netdb.h"
+      export *
+    }
+    explicit module netinet {
+      explicit module in {
+        header "netinet/in.h"
+        export *
+      }
+      explicit module tcp {
+        header "netinet/tcp.h"
+        export *
+      }
+    }
+    explicit module nl_types {
+      header "nl_types.h"
+      export *
+    }
+    explicit module poll {
+      header "poll.h"
+      export *
+    }
+    explicit module pthread {
+      header "pthread.h"
+      export *
+    }
+    explicit module pwd {
+      header "pwd.h"
+      export *
+    }
+    explicit module regex {
+      header "regex.h"
+      export *
+    }
+    explicit module sched {
+      header "sched.h"
+      export *
+    }
+    explicit module search {
+      header "search.h"
+      export *
+    }
+    explicit module semaphore {
+      header "semaphore.h"
+      export *
+    }
+    explicit module spawn {
+      header "spawn.h"
+      export *
+    }
+    explicit module strings {
+      header "strings.h"
+      export *
+    }
+    explicit module stropts {
+      header "stropts.h"
+      export *
+    }
+    explicit module sys {
+      explicit module wait {
+        header "sys/wait.h"
+        export *
+      }
+      explicit module types {
+        header "sys/types.h"
+        export *
+      }
+      explicit module socket {
+        header "sys/socket.h"
+        export *
+      }
+      explicit module shm {
+        header "sys/shm.h"
+        export *
+      }
+      explicit module utsname {
+        header "sys/utsname.h"
+        export *
+      }
+      explicit module uio {
+        header "sys/uio.h"
+        export *
+      }
+      explicit module msg {
+        header "sys/msg.h"
+        export *
+      }
+      explicit module un {
+        header "sys/un.h"
+        export *
+      }
+      explicit module mman {
+        header "sys/mman.h"
+        export *
+      }
+      explicit module select {
+        header "sys/select.h"
+        export *
+      }
+      explicit module statvfs {
+        header "sys/statvfs.h"
+        export *
+      }
+      explicit module resource {
+        header "sys/resource.h"
+        export *
+      }
+      explicit module time {
+        header "sys/time.h"
+        export *
+      }
+      explicit module times {
+        header "sys/times.h"
+        export *
+      }
+      explicit module stat {
+        header "sys/stat.h"
+        export *
+      }
+      explicit module ipc {
+        header "sys/ipc.h"
+        export *
+      }
+      explicit module sem {
+        header "sys/sem.h"
+        export *
+      }
+    }
+    explicit module syslog {
+      header "syslog.h"
+      export *
+    }
+    explicit module tar {
+      header "tar.h"
+      export *
+    }
+    explicit module termios {
+      header "termios.h"
+      export *
+    }
+    explicit module trace {
+      header "trace.h"
+      export *
+    }
+    explicit module ulimit {
+      header "ulimit.h"
+      export *
+    }
+    explicit module unistd {
+      header "unistd.h"
+      export *
+    }
+    explicit module utime {
+      header "utime.h"
+      export *
+    }
+    explicit module utmpx {
+      header "utmpx.h"
+      export *
+    }
+    explicit module wordexp {
+      header "wordexp.h"
+      export *
+    }
+  }
+}
