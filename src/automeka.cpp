@@ -1,6 +1,3 @@
-#define __STDC_LIMIT_MACROS
-#define __STDC_CONSTANT_MACROS
-
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/ValueSymbolTable.h"
@@ -15,8 +12,6 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/uuid/sha1.hpp>
-
-#include <git2.h>
 
 #include <unordered_set>
 #include <unordered_map>
@@ -79,21 +74,21 @@ cbrgb = ${crgb}[1m
 cbdef = ${cdef}[1m
 cbrst = ${crst}[1m
 
-cxx = clang++-3.6
-lnk = llvm-link-3.6
+cxx = clang++-3.7
+lnk = llvm-link-3.7
 
 cflags   = -std=c11 -fpic -g -O3 -fmodules -fautolink
-cxxflags = -std=c++1y -fpic -g -O3 -fmodules -fautolink
+cxxflags = -std=c++1y -fpic -g -O3 -fmodules -fautolink -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS
 ldflags  = -O3 -Wl,-O3 -Wl,--gc-sections -L$builddir/lib -Wl,-rpath,$builddir/lib
 
 rule cxx
-  command = $cxx -MMD -MT $out -MF $out.d $cxxflags $incdirs -x c++ -c -emit-llvm -o $out $in
+  command = $cxx -MMD -MT $out -MF $out.d $cxxflags $incdirs -fmodule-name=${module} -x c++ -c -emit-llvm -o $out $in
   description = ${cylw}CXX${crst} ${cgrn}$out${crst}
   depfile = $out.d
   deps = gcc
 
 rule cc
-  command = $cxx -MMD -MT $out -MF $out.d $cflags $incdirs -x c -c -emit-llvm -o $out $in
+  command = $cxx -MMD -MT $out -MF $out.d $cflags $incdirs -fmodule-name=${module} -x c -c -emit-llvm -o $out $in
   description = ${cylw}CC${crst}  ${cgrn}$out${crst}
   depfile = $out.d
   deps = gcc
@@ -252,9 +247,11 @@ rule exe
       auto        buffer_or_error = llvm::MemoryBuffer::getFile(path.generic_string());
       auto const& buffer          = *buffer_or_error.get();
       auto        binary_or_error = llvm::object::createBinary(buffer.getMemBufferRef(), &context);
-      auto const& binary          = *binary_or_error.get();
+      auto&       binary          = *binary_or_error.get();
 
       if (auto* object = llvm::dyn_cast<llvm::object::IRObjectFile>(&binary)) {
+        object->getModule().materializeMetadata();
+
         if (auto* options = llvm::cast<llvm::MDNode>(object->getModule().getModuleFlag("Linker Options"))) {
           for (auto& operand : options->operands()) {
             for (auto& o : llvm::cast<llvm::MDNode>(operand)->operands()) {
@@ -410,12 +407,6 @@ rule exe
     }
 
     return std::move(projects);
-  };
-
-  auto const sha1 = [](fs::path file) {
-    git_oid out;
-    git_odb_hashfile(&out, file.generic_string().c_str(), GIT_OBJ_BLOB);
-    return out;
   };
 
   extern "C" int main(int, char*[]) {

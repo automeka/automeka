@@ -733,4 +733,6 @@ module std [system] {
       export *
     }
   }
+
+  link "pthread"
 }
