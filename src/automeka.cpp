@@ -77,18 +77,18 @@ cbrst = ${crst}[1m
 cxx = clang++-3.7
 lnk = llvm-link-3.7
 
-cflags   = -std=c11 -fpic -g -O3 -fmodules -fautolink
-cxxflags = -std=c++1y -fpic -g -O3 -fmodules -fautolink -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS
-ldflags  = -O3 -Wl,-O3 -Wl,--gc-sections -L$builddir/lib -Wl,-rpath,$builddir/lib
+ccflags = -O3 -fPIC -fmodules -fautolink -ffunction-sections -fdata-sections
+defines = -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS
+ldflags = -Wl,-O3 -Wl,-s -Wl,--gc-sections -L$builddir/lib -Wl,-rpath,$builddir/lib
 
 rule cxx
-  command = $cxx -MMD -MT $out -MF $out.d $cxxflags $incdirs -fmodule-name=${module} -x c++ -c -emit-llvm -o $out $in
+  command = $cxx -x c++ -std=c++1y -o $out $in -c -emit-llvm -MMD -MT $out -MF $out.d $ccflags $defines $incdirs -fmodule-name=$module
   description = ${cylw}CXX${crst} ${cgrn}$out${crst}
   depfile = $out.d
   deps = gcc
 
 rule cc
-  command = $cxx -MMD -MT $out -MF $out.d $cflags $incdirs -fmodule-name=${module} -x c -c -emit-llvm -o $out $in
+  command = $cxx -x c   -std=c11   -o $out $in -c -emit-llvm -MMD -MT $out -MF $out.d $ccflags $defines $incdirs -fmodule-name=$module
   description = ${cylw}CC${crst}  ${cgrn}$out${crst}
   depfile = $out.d
   deps = gcc
@@ -98,11 +98,11 @@ rule lnk
   description = ${cylw}LNK${crst} ${cblu}$out${crst}
 
 rule lib
-  command = $cxx -fPIC $ldflags -shared -x ir -o $out $in -Wl,--start-group $libs -Wl,--end-group
+  command = $cxx -x ir -o $out $in -shared $ccflags $ldflags -fmodule-name=$module -Wl,--start-group $libs -Wl,--end-group
   description = ${cylw}LIB${crst} ${cblu}$out${crst}
 
 rule exe
-  command = $cxx -fPIC $ldflags -x ir -o $out $in -Wl,--start-group $libs -Wl,--end-group
+  command = $cxx -x ir -o $out $in         $ccflags $ldflags -fmodule-name=$module -Wl,--start-group $libs -Wl,--end-group
   description = ${cylw}EXE${crst} ${cblu}$out${crst}
 
 )";
@@ -418,26 +418,6 @@ rule exe
     auto const libdir    = builddir / "lib";
     auto const bindir    = builddir / "bin";
 
-
-    // auto folders = { "/usr/lib/x86_64-linux-gnu", "/usr/include", "lib", "src" };
-
-    // for (auto f : folders) {
-    //   for (auto it = fs::directory_iterator{f}, end = fs::directory_iterator {}; it != end; ++it) {
-    //     auto const path = *it;
-    //     if (!fs::is_file(path))
-    //       continue;
-
-    //     if (fs::is_symlink(path))
-    //       continue;
-
-    //     std::cerr << path << std::endl;
-    //     sha1(path);
-    //   }
-    // }
-
-    // return 0;
-
-
     auto projects = find_projects(root);
 
     {
@@ -525,6 +505,7 @@ rule exe
 
           libraries.insert("-l" + p.name);
           out << "build " << (libdir / (prefix::lib + p.name)).generic_string() << extension::lib << ": lib " << object << "\n";
+          out << "  module = " << p.name << "\n";
         }
 
         for (auto const& p : projects) {
@@ -541,6 +522,7 @@ rule exe
             }
             out << "\n";
             out << "  libs = " << boost::algorithm::join(linklibs, " ") << "\n";
+            out << "  module = " << p.name << "\n";
             out << "\n";
           }
         }
