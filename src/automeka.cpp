@@ -125,109 +125,12 @@ rule exe
 
       return std::move(rel);
     };
-
-    auto const is_file = [](fs::path path) {
-      switch (fs::status(path).type()) {
-        default:
-        case fs::status_error:
-        case fs::file_not_found:
-        case fs::directory_file:
-        case fs::type_unknown:
-          return false;
-
-        case fs::regular_file:
-        case fs::symlink_file:
-        case fs::block_file:
-        case fs::character_file:
-        case fs::fifo_file:
-        case fs::socket_file:
-          return true;
-      }
-    };
-
-    auto const is_directory = [](fs::path path) {
-      switch (fs::status(path).type()) {
-        default:
-        case fs::status_error:
-        case fs::file_not_found:
-        case fs::type_unknown:
-        case fs::regular_file:
-        case fs::symlink_file:
-        case fs::block_file:
-        case fs::character_file:
-        case fs::fifo_file:
-        case fs::socket_file:
-          return false;
-
-        case fs::directory_file:
-          return true;
-      }
-    };
   }
 
-  namespace symbol {
+  namespace module {
     auto const main = "main";
 
-    auto const read = [](fs::path const& path, bool defined) {
-      auto&       context         = llvm::getGlobalContext();
-      auto        buffer_or_error = llvm::MemoryBuffer::getFile(path.generic_string());
-      auto const& buffer          = *buffer_or_error.get();
-      auto        binary_or_error = llvm::object::createBinary(buffer.getMemBufferRef(), &context);
-      auto const& binary          = *binary_or_error.get();
-
-      auto const from_object = [defined](auto const& object) {
-        auto symbols = std::unordered_set<std::string> {};
-
-        for (auto& sym : object.symbols()) {
-          llvm::StringRef name;
-          if (sym.getName(name))
-            continue;
-
-          uint32_t flags = sym.getFlags();
-          if (!!(flags & llvm::object::SymbolRef::SF_Undefined) == defined)
-            continue;
-
-          llvm::object::SymbolRef::Type type;
-          if (sym.getType(type))
-            continue;
-
-          if (defined && type != llvm::object::SymbolRef::ST_Data && type != llvm::object::SymbolRef::ST_Function)
-            continue;
-
-          if (name.empty() || name[0] == '.')
-            continue;
-
-          symbols.insert(name);
-        }
-
-        return std::move(symbols);
-      };
-
-      auto const from_archive = [&](auto const& archive) {
-        auto symbols = std::unordered_set<std::string> {};
-
-        for (auto it = archive.child_begin(), end = archive.child_end(); it != end; ++it) {
-          auto        binary_or_error = it->getAsBinary(&context);
-          auto const& binary          = *binary_or_error.get();
-
-          if (auto* object = llvm::dyn_cast<llvm::object::ObjectFile>(&binary)) {
-            auto objsyms = from_object(*object);
-            std::move(std::begin(objsyms), std::end(objsyms), std::inserter(symbols, symbols.begin()));
-          }
-        }
-
-        return std::move(symbols);
-      };
-
-      if (auto* archive = llvm::dyn_cast<llvm::object::Archive>(&binary))
-        return from_archive(*archive);
-      else if (auto* object = llvm::dyn_cast<llvm::object::ObjectFile>(&binary))
-        return from_object(*object);
-      else
-        return std::unordered_set<std::string> {};
-    };
-
-    auto const find = [](fs::path const& path, std::string const& name) {
+    auto const contains = [](fs::path const& path, std::string const& name) {
       auto&       context         = llvm::getGlobalContext();
       auto        buffer_or_error = llvm::MemoryBuffer::getFile(path.generic_string());
       auto const& buffer          = *buffer_or_error.get();
@@ -263,47 +166,16 @@ rule exe
 
       return flags;
     };
-
-    auto const defined   = [](fs::path const& path) { return symbol::read(path, true); };
-    auto const undefined = [](fs::path const& path) { return symbol::read(path, false); };
-  }
-
-  namespace system {
-    auto const root = "/usr/lib/x86_64-linux-gnu";
-
-    auto const libraries = []() {
-      auto libraries = std::vector<fs::path> {};
-
-      for (auto it = fs::directory_iterator {system::root}, end = fs::directory_iterator {}; it != end; ++it) {
-        if (!fs::is_file(*it))
-          continue;
-
-        auto const path = *it;
-        if (fs::extension(path) != extension::arc)
-          continue;
-
-        if (fs::extension(fs::stem(path)) == ".dll")
-          continue;
-
-        if (!boost::algorithm::starts_with(fs::filename(path), prefix::arc))
-          continue;
-
-        libraries.emplace_back(*it);
-      }
-
-      return libraries;
-    };
   }
 
   struct project {
     project() = default;
-    project(std::string name, fs::path path, std::vector<fs::path> sources, std::vector<fs::path> tests)
-      : name(std::move(name)), path(std::move(path)), sources(std::move(sources)), tests(std::move(tests)) {}
+    project(std::string name, fs::path path, std::vector<fs::path> sources)
+      : name(std::move(name)), path(std::move(path)), sources(std::move(sources)) {}
 
     std::string           name;
     fs::path              path;
     std::vector<fs::path> sources;
-    std::vector<fs::path> tests;
 
     std::vector<fs::path> objects  = {};
     std::vector<fs::path> binaries = {};
@@ -315,9 +187,8 @@ rule exe
     if (!fs::exists(root / folder::src))
       return std::move(sources);
 
-    for (auto it = fs::recursive_directory_iterator{root / folder::src}, end = fs::recursive_directory_iterator {}; it != end; ++it) {
-      auto const path = *it;
-      if (!fs::is_file(path))
+    for (auto&& path : fs::recursive_directory_iterator{root / folder::src}) {
+      if (!fs::is_regular_file(path) && !fs::is_symlink(path))
         continue;
 
       auto const ext = fs::extension(path);
@@ -328,7 +199,7 @@ rule exe
       if (boost::algorithm::ends_with(fs::filename(path), suffix::test + ext))
         continue;
 
-      sources.emplace_back(fs::relative(root, *it));
+      sources.emplace_back(fs::relative(root, path));
     }
 
     return std::move(sources);
@@ -338,35 +209,35 @@ rule exe
     auto tests = std::vector<fs::path> {};
 
     if (fs::exists(root / folder::src)) {
-      for (auto it = fs::recursive_directory_iterator{root / folder::src}, end = fs::recursive_directory_iterator {}; it != end; ++it) {
-        auto const path = *it;
-        if (!fs::is_file(path))
+      for (auto&& path : fs::recursive_directory_iterator{root / folder::src}) {
+        if (!fs::is_regular_file(path) && !fs::is_symlink(path))
           continue;
 
         auto const ext = fs::extension(path);
-        if (std::find(std::begin(extension::cpp), std::end(extension::cpp), ext) == std::end(extension::cpp))
+        if (std::find(std::begin(extension::cpp), std::end(extension::cpp), ext) == std::end(extension::cpp) &&
+            std::find(std::begin(extension::c), std::end(extension::c), ext) == std::end(extension::c))
           continue;
 
         if (!boost::algorithm::ends_with(fs::filename(path), suffix::test + ext))
           continue;
 
-        tests.emplace_back(fs::relative(root, *it));
+        tests.emplace_back(fs::relative(root, path));
       }
     }
 
     if (!fs::exists(root / folder::test))
       return std::move(tests);
 
-    for (auto it = fs::recursive_directory_iterator{root / folder::test}, end = fs::recursive_directory_iterator {}; it != end; ++it) {
-      auto const path = *it;
-      if (!fs::is_file(path))
+    for (auto&& path : fs::recursive_directory_iterator{root / folder::test}) {
+      if (!fs::is_regular_file(path) && !fs::is_symlink(path))
         continue;
 
       auto const ext = fs::extension(path);
-      if (std::find(std::begin(extension::cpp), std::end(extension::cpp), ext) == std::end(extension::cpp))
+      if (std::find(std::begin(extension::cpp), std::end(extension::cpp), ext) == std::end(extension::cpp) &&
+          std::find(std::begin(extension::c), std::end(extension::c), ext) == std::end(extension::c))
         continue;
 
-      tests.emplace_back(fs::relative(root, *it));
+      tests.emplace_back(fs::relative(root, path));
     }
 
     return std::move(tests);
@@ -403,7 +274,10 @@ rule exe
       }
       names.insert(name);
 
-      projects.emplace_back(name, relp, find_sources(path), find_tests(path));
+      projects.emplace_back(name, relp, find_sources(path));
+
+      if (path == root)
+        projects.emplace_back(name + "_test", relp, find_tests(path));
     }
 
     return std::move(projects);
@@ -463,7 +337,7 @@ rule exe
           for (auto const& s : p.sources) {
             auto const object  = fs::change_extension(objdir / p.name / s, extension::obj);
 
-            if (symbol::find(object, symbol::main))
+            if (module::contains(object, module::main))
               p.objects.emplace_back(std::move(object));
             else
               p.binaries.emplace_back(std::move(object));
@@ -510,7 +384,11 @@ rule exe
 
         for (auto const& p : projects) {
           for (auto const& o : p.binaries) {
-            auto linklibs = symbol::libraries(o);
+            auto linklibs = module::libraries(o);
+
+            auto self = "-l" + p.name;
+            if (libraries.find(self) != libraries.end())
+              linklibs.emplace_back(self);
 
             out << "build " << (bindir / p.name / (fs::basename(o) + extension::exe)).generic_string() << ": exe " << o.generic_string() << " |";
             for (auto l : linklibs) {
