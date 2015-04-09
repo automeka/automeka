@@ -1,6 +1,5 @@
 language: cpp
 script:
-  - git submodule update --init --recursive --depth 1
   - cd bin/ninja; ./bootstrap.py; cd ../..
   - ./bin/ninja/ninja
   - ./build/automeka
