@@ -11,7 +11,6 @@
 #include <boost/range/algorithm/mismatch.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/predicate.hpp>
-#include <boost/uuid/sha1.hpp>
 
 #include <unordered_set>
 #include <unordered_map>
