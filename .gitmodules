@@ -5,35 +5,35 @@
 [submodule "lib/boost_algorithm"]
 	path = lib/boost_algorithm
 	url = https://github.com/automeka/boost_algorithm
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_assert"]
 	path = lib/boost_assert
 	url = https://github.com/automeka/boost_assert
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_bind"]
 	path = lib/boost_bind
 	url = https://github.com/automeka/boost_bind
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_concept_check"]
 	path = lib/boost_concept_check
 	url = https://github.com/automeka/boost_concept_check
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_config"]
 	path = lib/boost_config
 	url = https://github.com/automeka/boost_config
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_core"]
 	path = lib/boost_core
 	url = https://github.com/automeka/boost_core
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_detail"]
 	path = lib/boost_detail
 	url = https://github.com/automeka/boost_detail
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_exception"]
 	path = lib/boost_exception
 	url = https://github.com/automeka/boost_exception
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_filesystem"]
 	path = lib/boost_filesystem
 	url = https://github.com/automeka/boost_filesystem
@@ -41,23 +41,23 @@
 [submodule "lib/boost_function"]
 	path = lib/boost_function
 	url = https://github.com/automeka/boost_function
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_functional"]
 	path = lib/boost_functional
 	url = https://github.com/automeka/boost_functional
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_integer"]
 	path = lib/boost_integer
 	url = https://github.com/automeka/boost_integer
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_io"]
 	path = lib/boost_io
 	url = https://github.com/automeka/boost_io
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_iterator"]
 	path = lib/boost_iterator
 	url = https://github.com/automeka/boost_iterator
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_mpl"]
 	path = lib/boost_mpl
 	url = https://github.com/automeka/boost_mpl
@@ -65,48 +65,72 @@
 [submodule "lib/boost_predef"]
 	path = lib/boost_predef
 	url = https://github.com/automeka/boost_predef
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_preprocessor"]
 	path = lib/boost_preprocessor
 	url = https://github.com/automeka/boost_preprocessor
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_range"]
 	path = lib/boost_range
 	url = https://github.com/automeka/boost_range
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_smart_ptr"]
 	path = lib/boost_smart_ptr
 	url = https://github.com/automeka/boost_smart_ptr
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_static_assert"]
 	path = lib/boost_static_assert
 	url = https://github.com/automeka/boost_static_assert
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_system"]
 	path = lib/boost_system
 	url = https://github.com/automeka/boost_system
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_throw_exception"]
 	path = lib/boost_throw_exception
 	url = https://github.com/automeka/boost_throw_exception
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_type_traits"]
 	path = lib/boost_type_traits
 	url = https://github.com/automeka/boost_type_traits
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_utility"]
 	path = lib/boost_utility
 	url = https://github.com/automeka/boost_utility
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_align"]
 	path = lib/boost_align
 	url = https://github.com/automeka/boost_align
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_regex"]
 	path = lib/boost_regex
 	url = https://github.com/automeka/boost_regex
-	branch = develop
+	branch = automeka
 [submodule "lib/boost_conversion"]
 	path = lib/boost_conversion
 	url = https://github.com/automeka/boost_conversion
-	branch = develop
+	branch = automeka
+[submodule "lib/boost_tuple"]
+	path = lib/boost_tuple
+	url = https://github.com/automeka/boost_tuple
+	branch = automeka
+[submodule "lib/boost_function_types"]
+	path = lib/boost_function_types
+	url = https://github.com/automeka/boost_function_types
+	branch = automeka
+[submodule "lib/boost_typeof"]
+	path = lib/boost_typeof
+	url = https://github.com/automeka/boost_typeof
+	branch = automeka
+[submodule "lib/boost_optional"]
+	path = lib/boost_optional
+	url = https://github.com/automeka/boost_optional
+	branch = automeka
+[submodule "lib/boost_move"]
+	path = lib/boost_move
+	url = https://github.com/automeka/boost_move
+	branch = automeka
+[submodule "lib/boost_array"]
+	path = lib/boost_array
+	url = https://github.com/automeka/boost_array
+	branch = automeka
