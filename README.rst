@@ -5,11 +5,11 @@
     :alt: Automkea
     :target: https://github.com/automeka/automeka
 
-.. image:: http://img.shields.io/travis/automeka/automeka/automeka.svg?style=flat-square
+.. image:: http://img.shields.io/travis/automeka/automeka/master.svg?style=flat-square
     :alt: Build Status
     :target: https://travis-ci.org/automeka/automeka
 
-.. image:: http://img.shields.io/badge/release-v0.0.1-orange.svg?style=flat-square
+.. image:: http://img.shields.io/github/release/automeka/automeka.svg?style=flat-square
     :alt: Github Release
     :target: https://github.com/automeka/automeka/releases
 
