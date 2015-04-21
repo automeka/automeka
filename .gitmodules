@@ -1,5 +1,5 @@
-[submodule "bin/ninja"]
-	path = bin/ninja
+[submodule "lib/ninja"]
+	path = lib/ninja
 	url = https://github.com/automeka/ninja
 	branch = automeka
 [submodule "lib/boost_algorithm"]

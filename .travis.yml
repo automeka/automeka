@@ -1,7 +1,7 @@
 language: cpp
 script:
-  - cd bin/ninja; ./bootstrap.py; cd ../..
-  - ./bin/ninja/ninja
+  - cd lib/ninja; ./configure.py --bootstrap; cd ../..
+  - ./lib/ninja/ninja
   - ./build/automeka
   - ./build/bin/automeka/automeka
 compiler:
