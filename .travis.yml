@@ -22,3 +22,4 @@ addons:
     - libgl1-mesa-dev
     - libegl1-mesa-dev
 cache: apt
+sudo: false
