@@ -12,9 +12,9 @@ addons:
     - llvm-toolchain-precise
     - ubuntu-toolchain-r-test
     packages:
-    - clang-3.7
-    - llvm-3.7
-    - llvm-3.7-dev
+    - clang-3.8
+    - llvm-3.8
+    - llvm-3.8-dev
     - g++-4.9
     - gcc-4.9
     - cmake
