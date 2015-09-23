@@ -81,7 +81,7 @@ defines = -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS
 ldflags = -Wl,-O3 -Wl,-s -Wl,--gc-sections -L$builddir/lib -Wl,-rpath,\$$ORIGIN/../../lib
 
 rule cxx
-  command = $cxx -x c++ -std=c++1y -o $out $in -c -emit-llvm -MMD -MT $out -MF $out.d $ccflags $defines $incdirs -fmodule-name=$module
+  command = $cxx -x c++ -std=c++1z -o $out $in -c -emit-llvm -MMD -MT $out -MF $out.d $ccflags $defines $incdirs -fmodule-name=$module
   description = ${cylw}CXX${crst} ${cgrn}$out${crst}
   depfile = $out.d
   deps = gcc

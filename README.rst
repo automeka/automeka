@@ -1,5 +1,5 @@
 ===============================================
-|Automeka| C++1y automated make
+|Automeka| C++1z automated make
 ===============================================
 .. |Automeka| image:: https://avatars2.githubusercontent.com/u/5724814?s=128
     :alt: Automkea
