@@ -1,5 +1,5 @@
 module stdlib [system] [extern_c] {
-  textual header "stddef.h"
+  header "stddef.h"
   header "stdlib.h"
   header "sys/types.h"
   header "sys/select.h"
@@ -11,25 +11,21 @@ module std [system] {
   // Utilities library
   explicit module cstdlib {
     header "cstdlib"
-    header "stdlib.h"
     requires cplusplus
     export *
   }
   explicit module csignal {
     header "csignal"
-    header "signal.h"
     requires cplusplus
     export *
   }
   explicit module csetjmp {
     header "csetjmp"
-    header "setjmp.h"
     requires cplusplus
     export *
   }
   explicit module cstdarg {
     header "cstdarg"
-    header "stdarg.h"
     requires cplusplus
     export *
   }
@@ -69,7 +65,6 @@ module std [system] {
   }
   explicit module ctime {
     header "ctime"
-    header "time.h"
     requires cplusplus
     export *
   }
@@ -79,10 +74,10 @@ module std [system] {
     export *
   }
   explicit module cstddef {
-    textual header "cstddef"
-    textual header "stddef.h"
+    header "cstddef"
+    // header "stddef.h"
     requires cplusplus
-    export *
+    export cstdlib
   }
   explicit module initializer_list {
     header "initializer_list"
@@ -115,25 +110,21 @@ module std [system] {
   // Numeric limits
   explicit module climits {
     header "climits"
-    header "limits.h"
     requires cplusplus
     export *
   }
   explicit module cfloat {
     header "cfloat"
-    header "float.h"
     requires cplusplus
     export *
   }
   explicit module cstdint {
     header "cstdint"
-    header "stdint.h"
     requires cplusplus11
     export *
   }
   explicit module cinttypes {
     header "cinttypes"
-    header "inttypes.h"
     requires cplusplus11
     export *
   }
@@ -156,7 +147,7 @@ module std [system] {
   }
   explicit module cassert {
     textual header "cassert"
-    textual header "assert.h"
+    // textual header "assert.h"
     requires cplusplus
     export *
   }
@@ -167,7 +158,6 @@ module std [system] {
   }
   explicit module cerrno {
     header "cerrno"
-    header "errno.h"
     requires cplusplus
     export *
   }
@@ -175,25 +165,21 @@ module std [system] {
   // Strings library
   explicit module cctype {
     header "cctype"
-    header "ctype.h"
     requires cplusplus
     export *
   }
   explicit module cwctype {
     header "cwctype"
-    header "wctype.h"
     requires cplusplus
     export *
   }
   explicit module cstring {
     header "cstring"
-    header "string.h"
     requires cplusplus
     export *
   }
   explicit module cwchar {
     header "cwchar"
-    header "wchar.h"
     requires cplusplus
     export *
   }
@@ -300,7 +286,6 @@ module std [system] {
   // Numerics library
   explicit module cmath {
     header "cmath"
-    header "math.h"
     requires cplusplus
     export *
   }
@@ -333,7 +318,6 @@ module std [system] {
   }
   explicit module cfenv {
     header "cfenv"
-    header "fenv.h"
     requires cplusplus11
     export *
   }
@@ -351,7 +335,6 @@ module std [system] {
   }
   explicit module clocale {
     header "clocale"
-    header "locale.h"
     requires cplusplus
     export *
   }
@@ -409,7 +392,6 @@ module std [system] {
   }
   explicit module cstdio {
     header "cstdio"
-    header "stdio.h"
     requires cplusplus
     export *
   }
@@ -459,20 +441,17 @@ module std [system] {
   // C compatibility headers
   explicit module ciso646 {
     header "ciso646"
-    header "iso646.h"
     requires cplusplus
     export *
   }
   explicit module ccomplex {
     header "ccomplex"
-    header "complex.h"
     requires cplusplus11
     export complex
     export *
   }
   explicit module ctgmath {
     header "ctgmath"
-    header "tgmath.h"
     requires cplusplus11
     export ccomplex
     export cmath
@@ -485,7 +464,6 @@ module std [system] {
   }
   explicit module cstdbool {
     header "cstdbool"
-    header "stdbool.h"
     requires cplusplus11
     export *
   }
@@ -632,7 +610,7 @@ module std [system] {
         export *
       }
       explicit module types {
-        header "sys/types.h"
+        // header "sys/types.h"
         export *
       }
       explicit module socket {
@@ -664,7 +642,7 @@ module std [system] {
         export *
       }
       explicit module select {
-        header "sys/select.h"
+        // header "sys/select.h"
         export *
       }
       explicit module statvfs {
@@ -730,6 +708,95 @@ module std [system] {
     }
     explicit module wordexp {
       header "wordexp.h"
+      export *
+    }
+
+    explicit module stdlib {
+      // header "stdlib.h"
+      export *
+    }
+    explicit module signal {
+      header "signal.h"
+      export *
+    }
+    explicit module setjmp {
+      header "setjmp.h"
+      export *
+    }
+    explicit module stdarg {
+      header "stdarg.h"
+      export *
+    }
+    explicit module time {
+      // header "time.h"
+      export *
+    }
+    explicit module limits {
+      header "limits.h"
+      export *
+    }
+    explicit module float {
+      header "float.h"
+      export *
+    }
+    explicit module stdint {
+      header "stdint.h"
+      export *
+    }
+    explicit module inttypes {
+      header "inttypes.h"
+      export *
+    }
+    explicit module errno {
+      header "errno.h"
+      export *
+    }
+    explicit module ctype {
+      header "ctype.h"
+      export *
+    }
+    explicit module wctype {
+      header "wctype.h"
+      export *
+    }
+    explicit module string {
+      header "string.h"
+      export *
+    }
+    explicit module wchar {
+      header "wchar.h"
+      export *
+    }
+    explicit module math {
+      header "math.h"
+      export *
+    }
+    explicit module fenv {
+      header "fenv.h"
+      export *
+    }
+    explicit module locale {
+      header "locale.h"
+      export *
+    }
+    explicit module stdio {
+      header "stdio.h"
+      export *
+    }
+    explicit module iso646 {
+      header "iso646.h"
+      export *
+    }
+    // explicit module complex {
+    //   header "complex.h"
+    //   export *
+    // }
+    // explicit module tgmath {
+    //   header "tgmath.h"
+    //   export *
+    // }
+    explicit module stdbool {
+      header "stdbool.h"
       export *
     }
   }

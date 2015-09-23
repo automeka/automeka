@@ -25,10 +25,10 @@ cbrgb = ${crgb}[1m
 cbdef = ${cdef}[1m
 cbrst = ${crst}[1m
 
-cxx      = clang++-3.7
+cxx      = clang++-3.8
 cxxflags = -std=c++1y -fpic -g -O3 -pthread -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS
 incdirs = -Ilib/boost_algorithm/include -Ilib/boost_bind/include -Ilib/boost_concept_check/include -Ilib/boost_config/include -Ilib/boost_detail/include -Ilib/boost_exception/include -Ilib/boost_filesystem/include -Ilib/boost_function/include -Ilib/boost_functional/include -Ilib/boost_integer/include -Ilib/boost_io/include -Ilib/boost_iterator/include -Ilib/boost_mpl/include -Ilib/boost_preprocessor/include -Ilib/boost_range/include -Ilib/boost_regex/include -Ilib/boost_smart_ptr/include -Ilib/boost_static_assert/include -Ilib/boost_system/include -Ilib/boost_type_traits/include -Ilib/boost_utility/include -Ilib/boost_predef/include -Ilib/boost_core/include -Ilib/boost_throw_exception/include -Ilib/boost_assert/include -Ilib/llvm/include -Ilib/std/include -Iinclude -Isrc
-libs = $$(llvm-config-3.7 --libs) -lpthread -ltermcap -ldl
+libs = $$(llvm-config-3.8 --libs) -lpthread -ltermcap -ldl
 
 rule cxx
   command = $cxx -MMD -MT $out -MF $out.d $cxxflags $incdirs -xc++ -c $in -o $out

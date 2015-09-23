@@ -134,3 +134,6 @@
 	path = lib/boost_array
 	url = https://github.com/automeka/boost_array
 	branch = automeka
+[submodule "lib/boost_numeric_conversion"]
+	path = lib/boost_numeric_conversion
+	url = https://github.com/automeka/numeric_conversion

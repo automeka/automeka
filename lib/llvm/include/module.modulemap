@@ -9,11 +9,9 @@ module llvm [system] {
 
 		// This is intended for (repeated) textual inclusion.
 		textual header "llvm/Analysis/TargetLibraryInfo.def"
-
 	}
 
-	module AsmParser { requires cplusplus umbrella "llvm/AsmParser" module * { export * }
-	}
+	module AsmParser { requires cplusplus umbrella "llvm/AsmParser" module * { export * } }
 
 	// A module covering CodeGen/ and Target/. These are intertwined
 	// and codependent, and thus notionally form a single module.
@@ -32,6 +30,9 @@ module llvm [system] {
 			exclude header "llvm/CodeGen/CommandFlags.h"
 			exclude header "llvm/CodeGen/LinkAllAsmWriterComponents.h"
 			exclude header "llvm/CodeGen/LinkAllCodegenComponents.h"
+
+			// These are intended for (repeated) textual inclusion.
+			textual header "llvm/CodeGen/DIEValue.def"
 		}
 
 		module Target {
@@ -44,7 +45,6 @@ module llvm [system] {
 			header "llvm/Analysis/BlockFrequencyInfoImpl.h"
 			export *
 		}
-
 	}
 
 	module Bitcode { requires cplusplus umbrella "llvm/Bitcode" module * { export * } }
@@ -55,12 +55,16 @@ module llvm [system] {
 		textual header "llvm/Config/Disassemblers.def"
 	}
 
+	module DebugInfo {
+		requires cplusplus
+		module DIContext { header "llvm/DebugInfo/DIContext.h" export * }
+	}
+
 	module DebugInfo_DWARF {
 		requires cplusplus
 
 		umbrella "llvm/DebugInfo/DWARF"
 		module * { export * }
-
 	}
 
 //	module DebugInfo_PDB {
@@ -83,9 +87,8 @@ module llvm [system] {
 //		exclude header "llvm/DebugInfo/PDB/DIA/DIASession.h"
 //		exclude header "llvm/DebugInfo/PDB/DIA/DIASourceFile.h"
 //		exclude header "llvm/DebugInfo/PDB/DIA/DIASupport.h"
-//
 //	}
-
+//
 //	module DebugInfo_PDB_DIA {
 //		requires cplusplus
 //
@@ -108,7 +111,6 @@ module llvm [system] {
 		exclude header "llvm/ExecutionEngine/MCJIT.h"
 		exclude header "llvm/ExecutionEngine/Interpreter.h"
 		exclude header "llvm/ExecutionEngine/OrcMCJITReplacement.h"
-
 	}
 
 	module IR {
@@ -129,12 +131,12 @@ module llvm [system] {
 		textual header "llvm/IR/DebugInfoFlags.def"
 		textual header "llvm/IR/Instruction.def"
 		textual header "llvm/IR/Metadata.def"
-
+		textual header "llvm/IR/Value.def"
 	}
 
-	module IRReader { requires cplusplus umbrella "llvm/IRReader" module * { export * } link "LLVMIRReader" }
-	module LineEditor { requires cplusplus umbrella "llvm/LineEditor" module * { export * } link "LLVMLineEditor" }
-	module LTO { requires cplusplus umbrella "llvm/LTO" module * { export * } link "LLVMLTO" }
+	module IRReader { requires cplusplus umbrella "llvm/IRReader" module * { export * } }
+	module LineEditor { requires cplusplus umbrella "llvm/LineEditor" module * { export * } }
+	module LTO { requires cplusplus umbrella "llvm/LTO" module * { export * } }
 
 	module MC {
 		requires cplusplus
@@ -150,18 +152,16 @@ module llvm [system] {
 
 		// Exclude this; it's fundamentally non-modular.
 		exclude header "llvm/MC/MCTargetOptionsCommandFlags.h"
-
 	}
 
 	module Object {
 		requires cplusplus
 		umbrella "llvm/Object"
 		module * { export * }
-
 	}
 
-	module Option { requires cplusplus umbrella "llvm/Option" module * { export * } link "LLVMOption" }
-	module TableGen { requires cplusplus umbrella "llvm/TableGen" module * { export * } link "LLVMTableGen" }
+	module Option { requires cplusplus umbrella "llvm/Option" module * { export * } }
+	module TableGen { requires cplusplus umbrella "llvm/TableGen" module * { export * } }
 
 	module Transforms {
 		requires cplusplus
@@ -170,7 +170,6 @@ module llvm [system] {
 
 		// FIXME: Excluded because it does bad things with the legacy pass manager.
 		exclude header "llvm/Transforms/IPO/PassManagerBuilder.h"
-
 	}
 
 	// A module covering ADT/ and Support/. These are intertwined and
@@ -206,6 +205,7 @@ module llvm [system] {
 			exclude header "llvm/Support/TargetRegistry.h"
 
 			// These are intended for textual inclusion.
+			textual header "llvm/Support/ARMTargetParser.def"
 			textual header "llvm/Support/Dwarf.def"
 			textual header "llvm/Support/ELFRelocs/AArch64.def"
 			textual header "llvm/Support/ELFRelocs/ARM.def"
@@ -217,9 +217,13 @@ module llvm [system] {
 			textual header "llvm/Support/ELFRelocs/Sparc.def"
 			textual header "llvm/Support/ELFRelocs/SystemZ.def"
 			textual header "llvm/Support/ELFRelocs/x86_64.def"
-
 		}
 
+		// This part of the module is usable from both C and C++ code.
+		module ConvertUTF {
+			header "llvm/Support/ConvertUTF.h"
+			export *
+		}
 	}
 
 	module CodeGen_MachineValueType {
@@ -228,7 +232,10 @@ module llvm [system] {
 		export *
 	}
 
-	module Support_DataTypes {
+	// This is used for a $src == $build compilation. Otherwise we use
+	// LLVM_Support_DataTypes_Build, defined in a module map that is
+	// copied into the build area.
+	module Support_DataTypes_Src {
 		header "llvm/Support/DataTypes.h"
 		export *
 	}
@@ -238,106 +245,117 @@ module llvm [system] {
 		module * { export * }
 	}
 
-	link "LLVMAnalysis"
-	link "LLVMAsmParser"
-	link "LLVMX86Disassembler"
-	link "LLVMAArch64AsmParser"
-	link "LLVMAArch64AsmPrinter"
-	link "LLVMAArch64CodeGen"
-	link "LLVMAArch64Desc"
-	link "LLVMAArch64Disassembler"
-	link "LLVMAArch64Info"
-	link "LLVMAArch64Utils"
-	link "LLVMARMAsmParser"
-	link "LLVMARMAsmPrinter"
-	link "LLVMARMCodeGen"
-	link "LLVMARMDesc"
-	link "LLVMARMDisassembler"
-	link "LLVMARMInfo"
-	link "LLVMAsmPrinter"
-	link "LLVMCodeGen"
-	link "LLVMCppBackendCodeGen"
-	link "LLVMCppBackendInfo"
+	link "LLVMLTO"
+	link "LLVMObjCARCOpts"
+	link "LLVMLinker"
+	link "LLVMIRReader"
+	link "LLVMBPFCodeGen"
+	link "LLVMBPFDesc"
+	link "LLVMBPFInfo"
+	link "LLVMBPFAsmPrinter"
+	link "LLVMAMDGPUCodeGen"
+	link "LLVMAMDGPUAsmParser"
+	link "LLVMAMDGPUUtils"
+	link "LLVMAMDGPUDesc"
+	link "LLVMAMDGPUInfo"
+	link "LLVMAMDGPUAsmPrinter"
+	link "LLVMSystemZDisassembler"
+	link "LLVMSystemZCodeGen"
+	link "LLVMSystemZAsmParser"
+	link "LLVMSystemZDesc"
+	link "LLVMSystemZInfo"
+	link "LLVMSystemZAsmPrinter"
+	link "LLVMHexagonDisassembler"
 	link "LLVMHexagonCodeGen"
 	link "LLVMHexagonDesc"
-	link "LLVMHexagonDisassembler"
 	link "LLVMHexagonInfo"
-	link "LLVMMipsAsmParser"
-	link "LLVMMipsAsmPrinter"
-	link "LLVMMipsCodeGen"
-	link "LLVMMipsDesc"
-	link "LLVMMipsDisassembler"
-	link "LLVMMipsInfo"
-	link "LLVMMSP430AsmPrinter"
-	link "LLVMMSP430CodeGen"
-	link "LLVMMSP430Desc"
-	link "LLVMMSP430Info"
-	link "LLVMNVPTXAsmPrinter"
 	link "LLVMNVPTXCodeGen"
 	link "LLVMNVPTXDesc"
 	link "LLVMNVPTXInfo"
-	link "LLVMPowerPCAsmParser"
-	link "LLVMPowerPCAsmPrinter"
-	link "LLVMPowerPCCodeGen"
-	link "LLVMPowerPCDesc"
-	link "LLVMPowerPCDisassembler"
-	link "LLVMPowerPCInfo"
-	link "LLVMR600AsmParser"
-	link "LLVMR600AsmPrinter"
-	link "LLVMR600CodeGen"
-	link "LLVMR600Desc"
-	link "LLVMR600Info"
-	link "LLVMSparcAsmParser"
-	link "LLVMSparcAsmPrinter"
-	link "LLVMSparcCodeGen"
-	link "LLVMSparcDesc"
-	link "LLVMSparcDisassembler"
-	link "LLVMSparcInfo"
-	link "LLVMSystemZAsmParser"
-	link "LLVMSystemZAsmPrinter"
-	link "LLVMSystemZCodeGen"
-	link "LLVMSystemZDesc"
-	link "LLVMSystemZDisassembler"
-	link "LLVMSystemZInfo"
-	link "LLVMX86AsmParser"
-	link "LLVMX86AsmPrinter"
-	link "LLVMX86CodeGen"
-	link "LLVMX86Desc"
-	link "LLVMX86Info"
-	link "LLVMX86Utils"
-	link "LLVMXCoreAsmPrinter"
+	link "LLVMNVPTXAsmPrinter"
+	link "LLVMCppBackendCodeGen"
+	link "LLVMCppBackendInfo"
+	link "LLVMMSP430CodeGen"
+	link "LLVMMSP430Desc"
+	link "LLVMMSP430Info"
+	link "LLVMMSP430AsmPrinter"
+	link "LLVMXCoreDisassembler"
 	link "LLVMXCoreCodeGen"
 	link "LLVMXCoreDesc"
-	link "LLVMXCoreDisassembler"
 	link "LLVMXCoreInfo"
-	link "LLVMDebugInfoDWARF"
+	link "LLVMXCoreAsmPrinter"
+	link "LLVMMipsDisassembler"
+	link "LLVMMipsCodeGen"
+	link "LLVMMipsAsmParser"
+	link "LLVMMipsDesc"
+	link "LLVMMipsInfo"
+	link "LLVMMipsAsmPrinter"
+	link "LLVMAArch64Disassembler"
+	link "LLVMAArch64CodeGen"
+	link "LLVMAArch64AsmParser"
+	link "LLVMAArch64Desc"
+	link "LLVMAArch64Info"
+	link "LLVMAArch64AsmPrinter"
+	link "LLVMAArch64Utils"
+	link "LLVMARMDisassembler"
+	link "LLVMARMCodeGen"
+	link "LLVMARMAsmParser"
+	link "LLVMARMDesc"
+	link "LLVMARMInfo"
+	link "LLVMARMAsmPrinter"
+	link "LLVMPowerPCDisassembler"
+	link "LLVMPowerPCCodeGen"
+	link "LLVMPowerPCAsmParser"
+	link "LLVMPowerPCDesc"
+	link "LLVMPowerPCInfo"
+	link "LLVMPowerPCAsmPrinter"
+	link "LLVMSparcDisassembler"
+	link "LLVMSparcCodeGen"
+	link "LLVMSparcAsmParser"
+	link "LLVMSparcDesc"
+	link "LLVMSparcInfo"
+	link "LLVMSparcAsmPrinter"
+	link "LLVMMIRParser"
+	link "LLVMAsmParser"
+	link "LLVMLibDriver"
+	link "LLVMOption"
 	link "LLVMDebugInfoPDB"
-	link "LLVMExecutionEngine"
-	link "LLVMPasses"
-	link "LLVMMCDisassembler"
-	link "LLVMMCJIT"
-	link "LLVMMCParser"
-	link "LLVMMC"
-	link "LLVMObject"
-	link "LLVMTransformUtils"
-	link "LLVMSupport"
-	link "LLVMObjCARCOpts"
-	link "LLVMLinker"
-	link "LLVMBitWriter"
+	link "LLVMTableGen"
 	link "LLVMOrcJIT"
-	link "LLVMInstrumentation"
+	link "LLVMLineEditor"
+	link "LLVMX86Disassembler"
+	link "LLVMX86AsmParser"
+	link "LLVMX86CodeGen"
 	link "LLVMSelectionDAG"
+	link "LLVMAsmPrinter"
+	link "LLVMX86Desc"
+	link "LLVMMCDisassembler"
+	link "LLVMX86Info"
+	link "LLVMX86AsmPrinter"
+	link "LLVMX86Utils"
+	link "LLVMMCJIT"
+	link "LLVMDebugInfoDWARF"
+	link "LLVMPasses"
 	link "LLVMipo"
 	link "LLVMVectorize"
+	link "LLVMProfileData"
 	link "LLVMInterpreter"
+	link "LLVMExecutionEngine"
 	link "LLVMRuntimeDyld"
+	link "LLVMObject"
+	link "LLVMMCParser"
+	link "LLVMCodeGen"
 	link "LLVMTarget"
 	link "LLVMScalarOpts"
-	link "LLVMProfileData"
-	link "LLVMBitReader"
 	link "LLVMInstCombine"
-	link "LLVMipa"
+	link "LLVMInstrumentation"
+	link "LLVMTransformUtils"
+	link "LLVMMC"
+	link "LLVMBitWriter"
+	link "LLVMBitReader"
+	link "LLVMAnalysis"
 	link "LLVMCore"
-
-  link "termcap"
+	link "LLVMSupport"
+	link "pthread"
+	link "termcap"
 }
