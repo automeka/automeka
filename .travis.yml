@@ -9,17 +9,8 @@ compiler:
 addons:
   apt:
     sources:
-    - llvm-toolchain-precise
     - ubuntu-toolchain-r-test
+    - llvm-toolchain-precise
     packages:
     - clang-3.8
-    - llvm-3.8
-    - llvm-3.8-dev
-    - g++-4.9
-    - gcc-4.9
-    - cmake
-    - ninja-build
-    - libgl1-mesa-dev
-    - libegl1-mesa-dev
-cache: apt
 sudo: false
