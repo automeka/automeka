@@ -13,4 +13,6 @@ addons:
     - llvm-toolchain-precise
     packages:
     - clang-3.8
+    - llvm-3.8
+    - llvm-3.8-dev
 sudo: false
