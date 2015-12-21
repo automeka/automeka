@@ -127,6 +127,7 @@ module llvm [system] {
 		module * { export * }
 
 		// These are intended for (repeated) textual inclusion.
+		textual header "llvm/IR/Attributes.inc"
 		textual header "llvm/IR/Intrinsics.gen"
 		textual header "llvm/IR/DebugInfoFlags.def"
 		textual header "llvm/IR/Instruction.def"
@@ -209,6 +210,7 @@ module llvm [system] {
 			textual header "llvm/Support/Dwarf.def"
 			textual header "llvm/Support/ELFRelocs/AArch64.def"
 			textual header "llvm/Support/ELFRelocs/ARM.def"
+			textual header "llvm/Support/ELFRelocs/AVR.def"
 			textual header "llvm/Support/ELFRelocs/Hexagon.def"
 			textual header "llvm/Support/ELFRelocs/i386.def"
 			textual header "llvm/Support/ELFRelocs/Mips.def"

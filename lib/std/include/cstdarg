@@ -1,1 +1,5 @@
+#if __has_include_next(<cstdarg>)
 #include_next <cstdarg>
+#else
+#include_next <stdarg.h>
+#endif

@@ -2,22 +2,42 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/ValueSymbolTable.h"
 #include "llvm/Object/Archive.h"
-#include "llvm/Object/ObjectFile.h"
 #include "llvm/Object/IRObjectFile.h"
-#include "llvm/Support/raw_ostream.h"
+#include "llvm/Object/ObjectFile.h"
 #include "llvm/Support/TargetSelect.h"
+#include "llvm/Support/raw_ostream.h"
 
-#include <boost/filesystem.hpp>
-#include <boost/range/algorithm/mismatch.hpp>
-#include <boost/algorithm/string/join.hpp>
-#include <boost/algorithm/string/predicate.hpp>
-
-#include <unordered_set>
-#include <unordered_map>
 #include <fstream>
 #include <iostream>
+#include <unordered_map>
+#include <unordered_set>
+
+#include <experimental/filesystem>
 
 namespace meka {
+  namespace algo {
+    auto const join = [](auto&& list, auto delim) {
+      if (list.size() == 0)
+        return std::string{};
+
+      if (list.size() == 1)
+        return list[0];
+
+      std::ostringstream joined;
+      std::copy(std::begin(list), std::end(list) - 1,
+                std::ostream_iterator< std::string >(joined, std::move(delim)));
+      joined << *std::rbegin(list);
+
+      return joined.str();
+    };
+
+    auto const ends_with = [](auto string, auto end) {
+      if (string.size() < end.size())
+        return false;
+      return std::equal(std::rbegin(end), std::rend(end), std::rbegin(string));
+    };
+  }
+
   namespace folder {
     auto const build   = "build";
     auto const src     = "src";
@@ -26,10 +46,10 @@ namespace meka {
   }
 
   namespace extension {
-    auto const cpp = { ".cpp", ".cc", ".C", ".c++", ".cxx" };
-    auto const hpp = { ".hpp", ".hh", ".H", ".h++", ".hxx" };
-    auto const c   = { ".c" };
-    auto const h   = { ".h" };
+    auto const cpp = {".cpp", ".cc", ".C", ".c++", ".cxx"};
+    auto const hpp = {".hpp", ".hh", ".H", ".h++", ".hxx"};
+    auto const c   = {".c"};
+    auto const h   = {".h"};
     auto const obj = ".o";
     auto const arc = ".a";
     auto const lib = ".so";
@@ -107,18 +127,27 @@ rule exe
 )";
 
   namespace fs {
-    using namespace ::boost::filesystem;
+    using namespace ::std::experimental::filesystem;
 
     auto const filename = [](fs::path path) { return std::move(path).filename().generic_string(); };
-    auto const stem = [](fs::path path) { return std::move(path).stem().generic_string(); };
+    auto const stem     = [](fs::path path) { return std::move(path).stem().generic_string(); };
+    auto const extension
+      = [](fs::path path) { return std::move(path).extension().generic_string(); };
+
+    auto const replace_extension = [](fs::path path, fs::path ext) {
+      return std::move(path).replace_extension(std::move(ext));
+    };
 
     auto const relative = [](fs::path from, fs::path to) {
-      auto const pair = boost::mismatch(from, to);
+      auto const pair = std::distance(std::begin(to), std::end(to))
+                            < std::distance(std::begin(from), std::end(from))
+                          ? std::mismatch(std::begin(to), std::end(to), std::begin(from))
+                          : std::mismatch(std::begin(from), std::end(from), std::begin(to));
 
       if (pair.first == std::begin(from))
         return std::move(to);
 
-      auto rel = fs::path {};
+      auto rel = fs::path{};
       std::for_each(pair.first, from.end(), [&](fs::path const& i) { rel /= ".."; });
       std::for_each(pair.second, to.end(), [&](fs::path const& i) { rel /= i; });
 
@@ -136,14 +165,14 @@ rule exe
       auto        binary_or_error = llvm::object::createBinary(buffer.getMemBufferRef(), &context);
       auto const& binary          = *binary_or_error.get();
 
-      if (auto* object = llvm::dyn_cast<llvm::object::IRObjectFile>(&binary))
+      if (auto* object = llvm::dyn_cast< llvm::object::IRObjectFile >(&binary))
         return object->getModule().getValueSymbolTable().lookup(name) == nullptr;
       else
         return false;
     };
 
     auto const libraries = [](fs::path const& path) {
-      auto flags = std::vector<std::string> {};
+      auto flags = std::vector< std::string >{};
 
       auto&       context         = llvm::getGlobalContext();
       auto        buffer_or_error = llvm::MemoryBuffer::getFile(path.generic_string());
@@ -151,13 +180,14 @@ rule exe
       auto        binary_or_error = llvm::object::createBinary(buffer.getMemBufferRef(), &context);
       auto&       binary          = *binary_or_error.get();
 
-      if (auto* object = llvm::dyn_cast<llvm::object::IRObjectFile>(&binary)) {
+      if (auto* object = llvm::dyn_cast< llvm::object::IRObjectFile >(&binary)) {
         object->getModule().materializeMetadata();
 
-        if (auto* options = llvm::cast<llvm::MDNode>(object->getModule().getModuleFlag("Linker Options"))) {
+        if (auto* options
+            = llvm::cast< llvm::MDNode >(object->getModule().getModuleFlag("Linker Options"))) {
           for (auto& operand : options->operands()) {
-            for (auto& o : llvm::cast<llvm::MDNode>(operand)->operands()) {
-              flags.push_back(llvm::cast<llvm::MDString>(o)->getString());
+            for (auto& o : llvm::cast< llvm::MDNode >(operand)->operands()) {
+              flags.push_back(llvm::cast< llvm::MDString >(o)->getString());
             }
           }
         }
@@ -169,19 +199,19 @@ rule exe
 
   struct project {
     project() = default;
-    project(std::string name, fs::path path, std::vector<fs::path> sources)
+    project(std::string name, fs::path path, std::vector< fs::path > sources)
       : name(std::move(name)), path(std::move(path)), sources(std::move(sources)) {}
 
-    std::string           name;
-    fs::path              path;
-    std::vector<fs::path> sources;
+    std::string             name;
+    fs::path                path;
+    std::vector< fs::path > sources;
 
-    std::vector<fs::path> objects  = {};
-    std::vector<fs::path> binaries = {};
+    std::vector< fs::path > objects  = {};
+    std::vector< fs::path > binaries = {};
   };
 
   auto const find_sources = [](fs::path root) {
-    auto sources = std::vector<fs::path> {};
+    auto sources = std::vector< fs::path >{};
 
     if (!fs::exists(root / folder::src))
       return std::move(sources);
@@ -191,11 +221,13 @@ rule exe
         continue;
 
       auto const ext = fs::extension(path);
-      if (std::find(std::begin(extension::cpp), std::end(extension::cpp), ext) == std::end(extension::cpp) &&
-          std::find(std::begin(extension::c), std::end(extension::c), ext) == std::end(extension::c))
+      if (std::find(std::begin(extension::cpp), std::end(extension::cpp), ext)
+            == std::end(extension::cpp)
+          && std::find(std::begin(extension::c), std::end(extension::c), ext)
+               == std::end(extension::c))
         continue;
 
-      if (boost::algorithm::ends_with(fs::filename(path), suffix::test + ext))
+      if (algo::ends_with(fs::filename(path), suffix::test + ext))
         continue;
 
       sources.emplace_back(fs::relative(root, path));
@@ -205,7 +237,7 @@ rule exe
   };
 
   auto const find_tests = [](fs::path root) {
-    auto tests = std::vector<fs::path> {};
+    auto tests = std::vector< fs::path >{};
 
     if (fs::exists(root / folder::src)) {
       for (auto&& path : fs::recursive_directory_iterator{root / folder::src}) {
@@ -213,11 +245,13 @@ rule exe
           continue;
 
         auto const ext = fs::extension(path);
-        if (std::find(std::begin(extension::cpp), std::end(extension::cpp), ext) == std::end(extension::cpp) &&
-            std::find(std::begin(extension::c), std::end(extension::c), ext) == std::end(extension::c))
+        if (std::find(std::begin(extension::cpp), std::end(extension::cpp), ext)
+              == std::end(extension::cpp)
+            && std::find(std::begin(extension::c), std::end(extension::c), ext)
+                 == std::end(extension::c))
           continue;
 
-        if (!boost::algorithm::ends_with(fs::filename(path), suffix::test + ext))
+        if (!algo::ends_with(fs::filename(path), suffix::test + ext))
           continue;
 
         tests.emplace_back(fs::relative(root, path));
@@ -232,8 +266,10 @@ rule exe
         continue;
 
       auto const ext = fs::extension(path);
-      if (std::find(std::begin(extension::cpp), std::end(extension::cpp), ext) == std::end(extension::cpp) &&
-          std::find(std::begin(extension::c), std::end(extension::c), ext) == std::end(extension::c))
+      if (std::find(std::begin(extension::cpp), std::end(extension::cpp), ext)
+            == std::end(extension::cpp)
+          && std::find(std::begin(extension::c), std::end(extension::c), ext)
+               == std::end(extension::c))
         continue;
 
       tests.emplace_back(fs::relative(root, path));
@@ -243,16 +279,17 @@ rule exe
   };
 
   auto const find_projects = [](fs::path root) {
-    auto names    = std::unordered_set<std::string> {};
-    auto projects = std::vector<project> {};
+    auto names    = std::unordered_set< std::string >{};
+    auto projects = std::vector< project >{};
 
-    for (auto it = fs::recursive_directory_iterator{root}, end = fs::recursive_directory_iterator {}; it != end; ++it) {
+    for (auto it = fs::recursive_directory_iterator{root}, end = fs::recursive_directory_iterator{};
+         it != end; ++it) {
       if (!fs::is_directory(*it))
         continue;
 
       auto const base = fs::filename(*it);
       if (base == folder::build) {
-        it.no_push();
+        it.disable_recursion_pending();
         continue;
       }
 
@@ -262,7 +299,7 @@ rule exe
       if (base != folder::src && base != folder::include)
         continue;
 
-      it.no_push();
+      it.disable_recursion_pending();
 
       auto const path = fs::path(*it).parent_path();
       auto const relp = fs::relative(root, path);
@@ -282,14 +319,15 @@ rule exe
     return std::move(projects);
   };
 
-  extern "C" int main(int, char*[]) {
-    auto const root      = fs::current_path();
-    auto const ninja     = std::string { std::getenv("NINJA") ? std::getenv("NINJA") : "ninja" };
+  extern "C" int main(int, char* []) {
+    // FIXME: fs::current_path() is currently broken
+    auto const root  = fs::path(".");
+    auto const ninja = std::string{std::getenv("NINJA") ? std::getenv("NINJA") : "ninja"};
 
-    auto const builddir  = fs::path(folder::build);
-    auto const objdir    = builddir / "obj";
-    auto const libdir    = builddir / "lib";
-    auto const bindir    = builddir / "bin";
+    auto const builddir = fs::path(folder::build);
+    auto const objdir   = builddir / "obj";
+    auto const libdir   = builddir / "lib";
+    auto const bindir   = builddir / "bin";
 
     auto projects = find_projects(root);
 
@@ -298,26 +336,35 @@ rule exe
       fs::create_directories(objdir);
 
       {
-        auto && out = std::ofstream { ninjafile };
+        auto&& out = std::ofstream{ninjafile};
         out << mekaninja;
 
-        auto incdirs = std::vector<std::string> {};
-        std::transform(std::begin(projects), std::end(projects), std::back_inserter(incdirs), [&root](auto project) { return "-I" + (project.path / folder::include).generic_string(); });
+        auto incdirs = std::vector< std::string >{};
+        std::transform(std::begin(projects), std::end(projects), std::back_inserter(incdirs),
+                       [&root](auto project) {
+                         return "-I" + (project.path / folder::include).generic_string();
+                       });
 
         for (auto const& p : projects) {
           for (auto const& s : p.sources) {
-            if (std::find(std::begin(extension::c), std::end(extension::c), fs::extension(s)) == std::end(extension::c))
-              out << "build " << fs::change_extension(objdir / p.name / s, extension::obj).generic_string() << ": cxx " << (p.path / s).generic_string() << "\n";
+            if (std::find(std::begin(extension::c), std::end(extension::c), fs::extension(s))
+                == std::end(extension::c))
+              out << "build "
+                  << fs::replace_extension(objdir / p.name / s, extension::obj).generic_string()
+                  << ": cxx " << (p.path / s).generic_string() << "\n";
             else
-              out << "build " << fs::change_extension(objdir / p.name / s, extension::obj).generic_string() << ": cc " << (p.path / s).generic_string() << "\n";
-            out << "  incdirs = -I" << (p.path / folder::src).generic_string() << " " << boost::algorithm::join(incdirs, " ") << "\n";
+              out << "build "
+                  << fs::replace_extension(objdir / p.name / s, extension::obj).generic_string()
+                  << ": cc " << (p.path / s).generic_string() << "\n";
+            out << "  incdirs = -I" << (p.path / folder::src).generic_string() << " "
+                << algo::join(incdirs, " ") << "\n";
             out << "  module = " << p.name << "\n";
             out << "\n";
           }
         }
       }
 
-      auto const command = ninja + " -f " + ninjafile + " -k0";
+      auto const command = ninja + " -f " + ninjafile + " ";
       auto const result  = std::system(command.c_str());
 
       if (result)
@@ -329,12 +376,12 @@ rule exe
       fs::create_directories(libdir);
 
       {
-        auto && out = std::ofstream { ninjafile };
+        auto&& out = std::ofstream{ninjafile};
         out << mekaninja;
 
         for (auto& p : projects) {
           for (auto const& s : p.sources) {
-            auto const object  = fs::change_extension(objdir / p.name / s, extension::obj);
+            auto const object = fs::replace_extension(objdir / p.name / s, extension::obj);
 
             if (module::contains(object, module::main))
               p.objects.emplace_back(std::move(object));
@@ -342,20 +389,22 @@ rule exe
               p.binaries.emplace_back(std::move(object));
           }
 
-          auto objects = std::vector<std::string> {};
-          std::transform(std::begin(p.objects), std::end(p.objects), std::back_inserter(objects), [](auto path) { return path.generic_string(); });
+          auto objects = std::vector< std::string >{};
+          std::transform(std::begin(p.objects), std::end(p.objects), std::back_inserter(objects),
+                         [](auto path) { return path.generic_string(); });
 
           if (objects.empty())
             continue;
 
-          out << "build " << (objdir / (prefix::arc + p.name)).generic_string() << extension::obj << ": lnk $\n";
+          out << "build " << (objdir / (prefix::arc + p.name)).generic_string() << extension::obj
+              << ": lnk $\n";
           for (auto const& o : objects)
             out << "  " << o << " $\n";
           out << "\n";
         }
       }
 
-      auto const command = ninja + " -f " + ninjafile + " -k0";
+      auto const command = ninja + " -f " + ninjafile + " ";
       auto const result  = std::system(command.c_str());
 
       if (result)
@@ -367,17 +416,18 @@ rule exe
       fs::create_directories(bindir);
 
       {
-        auto && out = std::ofstream { ninjafile };
+        auto&& out = std::ofstream{ninjafile};
         out << mekaninja;
 
-        auto libraries = std::unordered_set<std::string> {};
+        auto libraries = std::unordered_set< std::string >{};
         for (auto& p : projects) {
           auto object = (objdir / (prefix::arc + p.name)).generic_string() + extension::obj;
           if (!fs::exists(object))
             continue;
 
           libraries.insert("-l" + p.name);
-          out << "build " << (libdir / (prefix::lib + p.name)).generic_string() << extension::lib << ": lib " << object << "\n";
+          out << "build " << (libdir / (prefix::lib + p.name)).generic_string() << extension::lib
+              << ": lib " << object << "\n";
           out << "  module = " << p.name << "\n";
         }
 
@@ -389,23 +439,25 @@ rule exe
             if (libraries.find(self) != libraries.end())
               linklibs.emplace_back(self);
 
-            out << "build " << (bindir / p.name / (fs::basename(o) + extension::exe)).generic_string() << ": exe " << o.generic_string() << " |";
+            out << "build " << (bindir / p.name / (fs::stem(o) + extension::exe)).generic_string()
+                << ": exe " << o.generic_string() << " |";
             for (auto l : linklibs) {
               if (libraries.find(l) == libraries.end())
                 continue;
 
               out << " $\n";
-              out << "  " << (libdir / (prefix::lib + l.substr(2))).generic_string() << extension::lib;
+              out << "  " << (libdir / (prefix::lib + l.substr(2))).generic_string()
+                  << extension::lib;
             }
             out << "\n";
-            out << "  libs = " << boost::algorithm::join(linklibs, " ") << "\n";
+            out << "  libs = " << algo::join(linklibs, " ") << "\n";
             out << "  module = " << p.name << "\n";
             out << "\n";
           }
         }
       }
 
-      auto const command = ninja + " -f " + ninjafile + " -k0";
+      auto const command = ninja + " -f " + ninjafile + " ";
       auto const result  = std::system(command.c_str());
 
       if (result)
@@ -414,5 +466,4 @@ rule exe
 
     return 0;
   }
-
 }

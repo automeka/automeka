@@ -1,1 +1,3 @@
+#if __has_include_next(<typeindex>)
 #include_next <typeindex>
+#endif

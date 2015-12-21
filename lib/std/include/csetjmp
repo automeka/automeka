@@ -1,1 +1,5 @@
+#if __has_include_next(<csetjmp>)
 #include_next <csetjmp>
+#else
+#include_next <setjmp.h>
+#endif

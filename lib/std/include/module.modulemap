@@ -4,6 +4,7 @@ module stdlib [system] [extern_c] {
   header "sys/types.h"
   header "sys/select.h"
   header "time.h"
+  header "limits.h"
   export *
 }
 
@@ -732,7 +733,7 @@ module std [system] {
       export *
     }
     explicit module limits {
-      header "limits.h"
+      // header "limits.h"
       export *
     }
     explicit module float {
@@ -802,4 +803,5 @@ module std [system] {
   }
 
   link "pthread"
+  link "stdc++fs"
 }

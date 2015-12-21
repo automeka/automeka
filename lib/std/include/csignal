@@ -1,1 +1,5 @@
+#if __has_include_next(<csignal>)
 #include_next <csignal>
+#else
+#include_next <signal.h>
+#endif
