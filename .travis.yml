@@ -10,7 +10,7 @@ addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
-    - llvm-toolchain-precise
+    - llvm-toolchain-trusty
     packages:
     - clang-3.8
     - llvm-3.8
