@@ -25,7 +25,7 @@ namespace meka {
 
       std::ostringstream joined;
       std::copy(std::begin(list), std::end(list) - 1,
-                std::ostream_iterator< std::string >(joined, std::move(delim)));
+                std::ostream_iterator<std::string>(joined, std::move(delim)));
       joined << *std::rbegin(list);
 
       return joined.str();
@@ -131,6 +131,7 @@ rule exe
 
     auto const filename = [](fs::path path) { return std::move(path).filename().generic_string(); };
     auto const stem     = [](fs::path path) { return std::move(path).stem().generic_string(); };
+
     auto const extension
       = [](fs::path path) { return std::move(path).extension().generic_string(); };
 
@@ -165,14 +166,14 @@ rule exe
       auto        binary_or_error = llvm::object::createBinary(buffer.getMemBufferRef(), &context);
       auto const& binary          = *binary_or_error.get();
 
-      if (auto* object = llvm::dyn_cast< llvm::object::IRObjectFile >(&binary))
+      if (auto* object = llvm::dyn_cast<llvm::object::IRObjectFile>(&binary))
         return object->getModule().getValueSymbolTable().lookup(name) == nullptr;
       else
         return false;
     };
 
     auto const libraries = [](fs::path const& path) {
-      auto flags = std::vector< std::string >{};
+      auto flags = std::vector<std::string>{};
 
       auto&       context         = llvm::getGlobalContext();
       auto        buffer_or_error = llvm::MemoryBuffer::getFile(path.generic_string());
@@ -180,14 +181,14 @@ rule exe
       auto        binary_or_error = llvm::object::createBinary(buffer.getMemBufferRef(), &context);
       auto&       binary          = *binary_or_error.get();
 
-      if (auto* object = llvm::dyn_cast< llvm::object::IRObjectFile >(&binary)) {
+      if (auto* object = llvm::dyn_cast<llvm::object::IRObjectFile>(&binary)) {
         object->getModule().materializeMetadata();
 
         if (auto* options
-            = llvm::cast< llvm::MDNode >(object->getModule().getModuleFlag("Linker Options"))) {
+            = llvm::cast<llvm::MDNode>(object->getModule().getModuleFlag("Linker Options"))) {
           for (auto& operand : options->operands()) {
-            for (auto& o : llvm::cast< llvm::MDNode >(operand)->operands()) {
-              flags.push_back(llvm::cast< llvm::MDString >(o)->getString());
+            for (auto& o : llvm::cast<llvm::MDNode>(operand)->operands()) {
+              flags.push_back(llvm::cast<llvm::MDString>(o)->getString());
             }
           }
         }
@@ -199,19 +200,19 @@ rule exe
 
   struct project {
     project() = default;
-    project(std::string name, fs::path path, std::vector< fs::path > sources)
+    project(std::string name, fs::path path, std::vector<fs::path> sources)
       : name(std::move(name)), path(std::move(path)), sources(std::move(sources)) {}
 
-    std::string             name;
-    fs::path                path;
-    std::vector< fs::path > sources;
+    std::string           name;
+    fs::path              path;
+    std::vector<fs::path> sources;
 
-    std::vector< fs::path > objects  = {};
-    std::vector< fs::path > binaries = {};
+    std::vector<fs::path> objects  = {};
+    std::vector<fs::path> binaries = {};
   };
 
   auto const find_sources = [](fs::path root) {
-    auto sources = std::vector< fs::path >{};
+    auto sources = std::vector<fs::path>{};
 
     if (!fs::exists(root / folder::src))
       return std::move(sources);
@@ -237,7 +238,7 @@ rule exe
   };
 
   auto const find_tests = [](fs::path root) {
-    auto tests = std::vector< fs::path >{};
+    auto tests = std::vector<fs::path>{};
 
     if (fs::exists(root / folder::src)) {
       for (auto&& path : fs::recursive_directory_iterator{root / folder::src}) {
@@ -279,8 +280,8 @@ rule exe
   };
 
   auto const find_projects = [](fs::path root) {
-    auto names    = std::unordered_set< std::string >{};
-    auto projects = std::vector< project >{};
+    auto names    = std::unordered_set<std::string>{};
+    auto projects = std::vector<project>{};
 
     for (auto it = fs::recursive_directory_iterator{root}, end = fs::recursive_directory_iterator{};
          it != end; ++it) {
@@ -339,7 +340,7 @@ rule exe
         auto&& out = std::ofstream{ninjafile};
         out << mekaninja;
 
-        auto incdirs = std::vector< std::string >{};
+        auto incdirs = std::vector<std::string>{};
         std::transform(std::begin(projects), std::end(projects), std::back_inserter(incdirs),
                        [&root](auto project) {
                          return "-I" + (project.path / folder::include).generic_string();
@@ -389,7 +390,7 @@ rule exe
               p.binaries.emplace_back(std::move(object));
           }
 
-          auto objects = std::vector< std::string >{};
+          auto objects = std::vector<std::string>{};
           std::transform(std::begin(p.objects), std::end(p.objects), std::back_inserter(objects),
                          [](auto path) { return path.generic_string(); });
 
@@ -419,7 +420,7 @@ rule exe
         auto&& out = std::ofstream{ninjafile};
         out << mekaninja;
 
-        auto libraries = std::unordered_set< std::string >{};
+        auto libraries = std::unordered_set<std::string>{};
         for (auto& p : projects) {
           auto object = (objdir / (prefix::arc + p.name)).generic_string() + extension::obj;
           if (!fs::exists(object))
