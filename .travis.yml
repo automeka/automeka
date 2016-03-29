@@ -5,6 +5,46 @@ script:
   - sudo aptitude update && sudo aptitude full-upgrade gcc-4.8 g++-4.8 -y
   - sudo aptitude install clang-3.9 llvm-3.9 llvm-3.9-dev -y
   - sudo aptitude install clang-3.9 llvm-3.9 llvm-3.9-dev -y
+  - |
+    # seriously!? this is apparently fixed on debian / gcc 5.3.1
+    sudo patch /usr/include/c++/5.3.0/experimental/fs_path.h <<EOF
+    --- /usr/include/c++/5.3.0/experimental/fs_path.h
+    +++ /usr/include/c++/5.3.0/experimental/fs_path.h
+    @@ -549,16 +549,6 @@
+         std::string _M_what = _M_gen_what();
+       };
+     
+    -  struct path::_Cmpt : path
+    -  {
+    -    _Cmpt(string_type __s, _Type __t, size_t __pos)
+    -      : path(std::move(__s), __t), _M_pos(__pos) { }
+    -
+    -    _Cmpt() : _M_pos(-1) { }
+    -
+    -    size_t _M_pos;
+    -  };
+    -
+       template<>
+         struct path::__is_encoded_char<char> : std::true_type
+         { using value_type = char; };
+    @@ -574,6 +564,16 @@
+       template<>
+         struct path::__is_encoded_char<char32_t> : std::true_type
+         { using value_type = char32_t; };
+    +
+    +  struct path::_Cmpt : path
+    +  {
+    +    _Cmpt(string_type __s, _Type __t, size_t __pos)
+    +      : path(std::move(__s), __t), _M_pos(__pos) { }
+    +
+    +    _Cmpt() : _M_pos(-1) { }
+    +
+    +    size_t _M_pos;
+    +  };
+     
+       // specialize _Cvt for degenerate 'noconv' case
+       template<>
+    EOF
   - cd lib/ninja; ./configure.py --bootstrap; cd ../..
   - ./lib/ninja/ninja
   - ./build/automeka
