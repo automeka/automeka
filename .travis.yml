@@ -16,4 +16,5 @@ addons:
     - llvm-3.8
     - llvm-3.8-dev
     - g++-5
-sudo: false
+sudo: required
+dist: trusty
