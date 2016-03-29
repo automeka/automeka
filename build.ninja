@@ -25,10 +25,10 @@ cbrgb = ${crgb}[1m
 cbdef = ${cdef}[1m
 cbrst = ${crst}[1m
 
-cxx      = clang++-3.8
+cxx      = clang++-3.9
 cxxflags = -std=c++1z -fpic -ggdb -O0 -pthread -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS
 incdirs  = -Ilib/llvm/include -Ilib/std/include -Iinclude -Isrc
-libs     = $$(llvm-config-3.8 --libs) -lpthread -ltermcap -ldl -lstdc++fs
+libs     = $$(llvm-config-3.9 --libs) -lpthread -ltermcap -ldl -lstdc++fs
 
 rule cxx
   command = $cxx -MMD -MT $out -MF $out.d $cxxflags $incdirs -xc++ -c $in -o $out

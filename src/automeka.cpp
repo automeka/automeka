@@ -93,8 +93,8 @@ cbrgb = ${crgb}[1m
 cbdef = ${cdef}[1m
 cbrst = ${crst}[1m
 
-cxx = clang++-3.8
-lnk = llvm-link-3.8
+cxx = clang++-3.9
+lnk = llvm-link-3.9
 
 ccflags = -O3 -fPIC -fmodules -fautolink -ffunction-sections -fdata-sections
 defines = -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS
