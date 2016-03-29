@@ -48,7 +48,7 @@ script:
   - cd lib/ninja; ./configure.py --bootstrap; cd ../..
   - ./lib/ninja/ninja
   - PATH="$(pwd)/lib/ninja/:$PATH" ./build/automeka
-  - PATH="$(pwd)/lib/ninja/:$PATH" ./build/bin/automeka/automeka
+  - PATH="$(pwd)/lib/ninja/:$PATH" ./build/bin/automeka
 compiler:
   - clang
 addons:
