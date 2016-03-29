@@ -1,5 +1,10 @@
 language: cpp
 script:
+  - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
+  - sudo add-apt-repository "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty main"
+  - sudo aptitude update && sudo aptitude full-upgrade gcc-4.8 g++-4.8 -y
+  - sudo aptitude install clang-3.9 llvm-3.9 llvm-3.9-dev -y
+  - sudo aptitude install clang-3.9 llvm-3.9 llvm-3.9-dev -y
   - cd lib/ninja; ./configure.py --bootstrap; cd ../..
   - ./lib/ninja/ninja
   - ./build/automeka
